@@ -7,7 +7,10 @@ namespace smidigprosjekt.Hubs
   [EnableCors("AllowAllHeaders")]
   public class TjommisHub : Hub
   {
+    //Add override on virtual OnConnect()
+    //Create connect message in chat
 
+    
     public async Task SendMessage(string user, string message)
     {
       object[] args = { user, message };

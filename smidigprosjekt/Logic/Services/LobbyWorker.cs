@@ -1,0 +1,11 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace smidigprosjekt.Logic.Services
+{
+  public class LobbyWorker
+  {
+  }
+}
