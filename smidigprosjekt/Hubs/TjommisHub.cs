@@ -19,53 +19,66 @@ namespace smidigprosjekt.Hubs
     {
       _userService = userService;
     }
-    //Add override on virtual OnConnect()
-    //Create connect message in chat
-    
+    /// <summary>
+    /// Sends a message to all clients
+    /// </summary>
+    /// <param name="message">Message to send</param>
+    /// <returns>A task that represents the asychronous communication</returns>
     public async Task SendMessage(string message)
     {
       string getuser = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
       await Clients.All.SendAsync("messageBroadcastEvent", getuser, message);
     }
 
-    //
-    // Summary:
-    //     Called when a new connection is established with the hub.
-    //
-    // Returns:
-    //     A System.Threading.Tasks.Task that represents the asynchronous connect.
-    
+    public async Task Hangout()
+    {
+      var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
+      user.HangoutSearch = true;
+      await Clients.Caller.SendAsync("hangoutEvent",_userService.GetHangoutUserCount());
+    }
+
+    /// <summary>
+    /// Called when a new connection is established with the hub.
+    /// </summary>
+    /// <returns>A System.Threading.Tasks.Task that represents the asynchronous connect</returns>
     public override async Task OnConnectedAsync()
     {
-      string getuser = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
-      var newUser = new User()
+      string userName = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+      if (string.IsNullOrEmpty(userName))
+      {
+        throw new Exception("Cannot identify user with connectionid: " + Context.ConnectionId);
+      };
+
+      //Create a new userobject and add it to userservice
+      _userService.Add(new User()
       {
         Id = _userService.Count() + 1,
         ConnectionId = Context.ConnectionId,
         Connected = true,
-        Username = getuser,
-        Lobbies = new List<Lobby>(),
+        Username = userName,
+        Lobbies = new List<Lobby>(), //Empty lobbylist
         HangoutSearch = false,
         Configuration = new UserConfiguration()
         {
           Interests = new List<string>()
           {
-            "test"
+            "Computer Science",
+            "Painting",
+            "Complaining"
           }
         }
-      };
-      _userService.Add(newUser,Clients.Caller);
-      await Clients.Caller.SendAsync("infoConnectEvent",getuser);
-      await Clients.All.SendAsync("messageBroadcastEvent", "system", getuser + " connected. (" + _userService.Count() + ")");
+      },Clients.Caller);
+
+
+      await Clients.Caller.SendAsync("infoConnectEvent",userName);
+      await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
     }
 
-
-    //
-    // Summary:
-    //     Called when a connection with the hub is terminated.
-    //
-    // Returns:
-    //     A System.Threading.Tasks.Task that represents the asynchronous disconnect.
+    /// <summary>
+    /// Called when a connection with the hub is terminated.
+    /// </summary>
+    /// <param name="exception"></param>
+    /// <returns>A System.Threading.Tasks.Task that represents the asynchronous disconnect.</returns>
     public override async Task OnDisconnectedAsync(Exception exception)
     {
       User user = _userService.GetUserFromConnectionId(Context.ConnectionId);
