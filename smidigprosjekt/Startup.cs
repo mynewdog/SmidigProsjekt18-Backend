@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using smidigprosjekt.Logic.Services;
 
 namespace smidigprosjekt
 {
@@ -85,6 +86,7 @@ namespace smidigprosjekt
 
       //Add signalR service
       services.AddSignalR();
+      services.RegisterServices();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -126,6 +128,8 @@ namespace smidigprosjekt
 
       //Use MVC
       app.UseMvc();
+
+      
     }
   }
 }

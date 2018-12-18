@@ -8,6 +8,8 @@ namespace smidigprosjekt.Models
   public class User
   {
     public int Id { get; set; }
+    public string ConnectionId { get; set; }
+
     public string Username { get; set; }
     public UserConfiguration Configuration { get; set; }
     public bool HangoutSearch { get; set; }
