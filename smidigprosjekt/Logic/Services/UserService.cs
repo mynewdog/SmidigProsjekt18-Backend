@@ -32,7 +32,10 @@ namespace smidigprosjekt.Logic.Services
     }
     public void truncateList()
     {
-
+      _users.Where(e => e.Key.Connected == false).ToList().ForEach(e =>
+        {
+          _users.TryRemove(e.Key, out var value);
+        });
     }
     public IEnumerable<User> All()
     {
@@ -41,7 +44,7 @@ namespace smidigprosjekt.Logic.Services
 
     public int Count()
     {
-      return _users.Count();
+      return _users.Where(e=>e.Key.Connected).Count();
     }
 
     public void Disconnect(string connectionId)

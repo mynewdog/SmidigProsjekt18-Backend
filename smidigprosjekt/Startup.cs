@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using smidigprosjekt.Logic.Services;
+using smidigprosjekt.Models;
 
 namespace smidigprosjekt
 {
@@ -20,7 +21,6 @@ namespace smidigprosjekt
     public Startup(IConfiguration configuration)
     {
       Configuration = configuration;
-
     }
 
     public IConfiguration Configuration { get; }
@@ -32,6 +32,12 @@ namespace smidigprosjekt
       //Injected from .\AuthServer.cs
       services.AddAuthenticationServer();
 
+      // Add functionality to inject IOptions<T>
+      services.AddOptions();
+
+      // Add our Config object so it can be injected
+      services.Configure<AppConfiguration>(Configuration.GetSection("Configuration"));
+
       //Add Authentication scheme and JwT bearer
       services.AddAuthentication(options =>
       {
@@ -40,7 +46,6 @@ namespace smidigprosjekt
       })
       .AddJwtBearer(config =>
       {
-
         //Add token valdiation parameters(use AuthServer.client_id) for verification
         config.TokenValidationParameters = new TokenValidationParameters
         {

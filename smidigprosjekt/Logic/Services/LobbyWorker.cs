@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using smidigprosjekt.Hubs;
+using smidigprosjekt.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +14,13 @@ namespace smidigprosjekt.Logic.Services
   public class LobbyWorker : BackgroundService
   {
     private IUserService _userService;
-    public LobbyWorker(IUserService userService)
+    private ILobbyService _lobbyService;
+    private AppConfiguration _appAonfig;
+    public LobbyWorker(IUserService userService, ILobbyService lobbyService, IOptions<AppConfiguration> appconfig)
     {
+      _lobbyService = lobbyService;
       _userService = userService;
+      _appAonfig = appconfig.Value;
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

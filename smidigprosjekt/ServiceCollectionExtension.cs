@@ -7,6 +7,11 @@ using System.Threading.Tasks;
 
 namespace smidigprosjekt.Logic.Services
 {
+
+  /// <summary>
+  /// RegisterServices() register services.
+  /// Persistent services and background tasks
+  /// </summary>
   public static class ServiceCollectionExtensions
   {
     //Register our services
@@ -14,8 +19,8 @@ namespace smidigprosjekt.Logic.Services
         this IServiceCollection services)
     {
       services.AddSingleton<IUserService, UserService>();
+      services.AddSingleton<ILobbyService, LobbyService>();
       services.AddSingleton<IHostedService, LobbyWorker>();
-      // and a lot more Services
 
       return services;
     }
