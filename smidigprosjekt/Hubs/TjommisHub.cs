@@ -71,6 +71,7 @@ namespace smidigprosjekt.Hubs
 
 
       await Clients.Caller.SendAsync("infoConnectEvent",userName);
+      await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
       await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
     }
 

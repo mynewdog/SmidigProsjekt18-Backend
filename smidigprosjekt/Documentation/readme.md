@@ -1,5 +1,8 @@
 ﻿# Documentation of SmidigProsjekt
 
+# Externe lenker
+  - Krisehjelp (Under hjelpefanen)
+
 # Framework dependencies
   - Dotnet 2.0 Core
     - Source: https://docs.microsoft.com/en-us/dotnet/core/
