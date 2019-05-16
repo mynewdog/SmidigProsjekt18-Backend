@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Authentication;
 using AspNet.Security.OpenIdConnect.Extensions;
 using AspNet.Security.OpenIdConnect.Primitives;
 using Microsoft.Extensions.DependencyInjection;
+using smidigprosjekt.Logic.Services;
+using AspNet.Security.OpenIdConnect.Server;
 
 namespace smidigprosjekt
 {
@@ -33,15 +35,14 @@ namespace smidigprosjekt
         /// <summary>
         /// Secret key for openId Connect authorization
         /// </summary>
-        public static string client_id => "tjommisdemo2018_signing_key_that_should_be_very_long";
-
+        public static string Client_id => "tjommisdemo2018_signing_key_that_should_be_very_long";
         /// <summary>
         /// Inject openid authentication protocol for aspnet core
         /// </summary>
         /// <param name="services">the service collection to add openid connect server to</param>
         public static void AddAuthenticationServer(this IServiceCollection services)
         {
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(client_id));
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Client_id));
             services.AddAuthentication()
               .AddCookie(options => options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None)
               .AddOpenIdConnectServer(options =>
@@ -53,15 +54,22 @@ namespace smidigprosjekt
                     options.TokenEndpointPath = "/token";
 
                     options.Provider.OnValidateTokenRequest = context =>
-              {
+                    {
 
-                  if (string.Equals(context.ClientId, client_id, StringComparison.Ordinal))
-                  {
-                      context.Validate();
-                  }
+                        if (string.Equals(context.ClientId, Client_id, StringComparison.Ordinal))
+                        {
+                            if (validateUser(context))
+                            {
+                                context.Validate();
+                            }
+                            else
+                            {
+                                context.Reject("Wrong username/password");
+                            }
+                        }
 
-                  return Task.CompletedTask;
-              };
+                        return Task.CompletedTask;
+                    };
 
                     /*
                      * If you wanna add extra parameters to the response
@@ -70,11 +78,11 @@ namespace smidigprosjekt
                      * */
                     options.Provider.OnApplyTokenResponse = response =>
               {
-              /*
-              if (response.Error == null) { 
-                response.Response.AddParameter("", extra unencrypted parameters);
-                response.Response.AddParameter("", extra unencrypted parameters);
-              }*/
+                  /*
+                  if (response.Error == null) { 
+                    response.Response.AddParameter("", extra unencrypted parameters);
+                    response.Response.AddParameter("", extra unencrypted parameters);
+                  }*/
                   return Task.CompletedTask;
               };
 
@@ -100,16 +108,16 @@ namespace smidigprosjekt
                   OpenIdConnectConstants.Destinations.IdentityToken);
                       ;
 
-                  /* If we want, we can add properties to go with authenticationpacket 
-                   * late in process by adding props, and injecting it later in ApplyTokenResponse
-                   */
-                  //var props = new AuthenticationProperties(new Dictionary<string, string>
-                  //{});
+                      /* If we want, we can add properties to go with authenticationpacket 
+                       * late in process by adding props, and injecting it later in ApplyTokenResponse
+                       */
+                      //var props = new AuthenticationProperties(new Dictionary<string, string>
+                      //{});
 
-                  var ticket = new AuthenticationTicket(
-                          new ClaimsPrincipal(identity),
-                          new AuthenticationProperties(),
-                          context.Scheme.Name);
+                      var ticket = new AuthenticationTicket(
+                              new ClaimsPrincipal(identity),
+                              new AuthenticationProperties(),
+                              context.Scheme.Name);
 
                       ticket.SetScopes(
                   OpenIdConnectConstants.Scopes.Profile,
@@ -118,8 +126,14 @@ namespace smidigprosjekt
                       context.Validate(ticket);
                   }
                   return Task.CompletedTask;
-              };
+                };
             });
+        }
+
+        private static bool validateUser(ValidateTokenRequestContext context)
+        {
+            var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+            return (userService.Validate(context.Request.Username, context.Request.Password));
         }
     }
 }
