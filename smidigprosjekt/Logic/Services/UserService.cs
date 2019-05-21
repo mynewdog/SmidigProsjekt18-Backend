@@ -46,6 +46,7 @@ namespace smidigprosjekt.Logic.Services
         /// </summary>
         /// <returns></returns>
         int GetHangoutUserCount();
+        IEnumerable<UserSession> GetHangoutUsers();
 
         /// <summary>
         /// Disconnects a user from the userlist
@@ -65,6 +66,11 @@ namespace smidigprosjekt.Logic.Services
         bool RegisterUser(User user);
     }
 
+    public class UserSession
+    {
+        public User user;
+        public IClientProxy proxy;
+    }
 
     public class UserService : IUserService
     {
@@ -85,7 +91,7 @@ namespace smidigprosjekt.Logic.Services
         }
         public bool RegisterUser(User user)
         {
-            if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.OrdinalIgnoreCase)) != null)
+            if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) != null)
             {
                 var result = FirebaseDbConnection.CreateUser(user);
                 result.Wait();
@@ -140,8 +146,13 @@ namespace smidigprosjekt.Logic.Services
 
         public bool Validate(string username, string password)
         {
-            if (_userAccessList?.SingleOrDefault(e => e.Username == username && e.IsPassword(password)) != null) return true;
+            if (_userAccessList?.SingleOrDefault(e => e.Username.Contains(username,StringComparison.InvariantCultureIgnoreCase) && e.IsPassword(password)) != null) return true;
             else return false;
+        }
+
+        public IEnumerable<UserSession> GetHangoutUsers()
+        {
+            return _activeUsers.Where(e => e.Key.HangoutSearch).Select(e => new UserSession() { proxy = e.Value, user = e.Key });
         }
     }
 

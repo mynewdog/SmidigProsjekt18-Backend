@@ -53,9 +53,10 @@ namespace smidigprosjekt
                     options.AllowInsecureHttp = true;
                     options.TokenEndpointPath = "/token";
 
+                    // On Login from Client
                     options.Provider.OnValidateTokenRequest = context =>
                     {
-
+                        // Check Client ID before we continue, should match
                         if (string.Equals(context.ClientId, Client_id, StringComparison.Ordinal))
                         {
                             if (validateUser(context))

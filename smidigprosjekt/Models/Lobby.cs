@@ -8,6 +8,7 @@ namespace smidigprosjekt.Models
 {
   public class Lobby
   {
+    public string LobbyName { get; set; }
     public int Id { get; set; }
     public ConcurrentDictionary<int, User> Members { get; set; }
     public List<Message> Messages {get;set;}
