@@ -64,6 +64,8 @@ namespace smidigprosjekt.Logic.Services
                 var userList = _userService.GetHangoutUsers();
                 var rnd = new Random();
 
+                // MatchUsers(userList)
+
                 Lobby room = new Lobby()
                 {
                     Id = rnd.Next(),
@@ -82,5 +84,25 @@ namespace smidigprosjekt.Logic.Services
 
             }
         }
+        // MatchUsers(var userList )
+        /*
+         * Get tempRoom() = new temp;
+         * get Room() = new room;
+         * foreach(var user in userList)
+         * {
+         *  if(user.user.fag[] == user.user.fag[]) // can be Klasse[] instead of fag[]
+         *      user.user.weightMatch = 4* // number of fag they match on
+         *  if(user.user.linje == user.user.linje)  
+         *      user.user.weightMatch = 3
+         *  if(user.user.skole == user.user.skole)  
+         *      user.user.weightMatch = 2
+         *  if(user.user.interresser[] == user.user.interesser[])  
+         *      user.user.weightMatch = 1+1* // number if interesser they match on // If they don't match on anything, have weight atleast 1
+         *  _hub.Groups.AddToGroupsAsync(user.user.ConnectonID, room.temp);    
+         * }     
+         * _hub.Groups. AddToGroupsAsync -> lamba function to only max users with the highest weightMatch left ();
+         * _hub.Clients.Group(room.LobbyName).SendAsync("JoinRoom", room);
+         * */
+
     }
 }
