@@ -6,38 +6,53 @@ using System.Threading.Tasks;
 
 namespace smidigprosjekt.Logic.Services
 {
-  public interface ILobbyService
-  {
-    IEnumerable<Lobby> All();
-    void Add(Lobby lobby);
-    void Delete(Lobby lobby);
-    int Count();
-  }
-  public class LobbyService : ILobbyService
-  {
-    public List<Lobby> Lobbies;
-    public LobbyService()
+    public interface ILobbyService
     {
-      Lobbies = new List<Lobby>();
+        IEnumerable<Lobby> All();
+        void Add(Lobby lobby);
+        void Delete(Lobby lobby);
+        int Count();
+        Lobby GetTemporary();
     }
-    public void Add(Lobby lobby)
+    /// <summary>
+    /// Keeps a list of lobbies in memory,
+    /// will also keep temporary lobbies for lobby
+    /// creation.
+    /// </summary>
+    public class LobbyService : ILobbyService
     {
-      throw new NotImplementedException();
-    }
+        public List<Lobby> Lobbies { get; set; }
+        public List<Lobby> Temporary { get; set; } 
 
-    public IEnumerable<Lobby> All()
-    {
-      throw new NotImplementedException();
-    }
+        public LobbyService()
+        {
+            Lobbies = new List<Lobby>();
+            Temporary = new List<Lobby>();
+        }
+        public void Add(Lobby lobby)
+        {
+            Lobbies.Add(lobby);
+        }
 
-    public int Count()
-    {
-      throw new NotImplementedException();
-    }
+        public IEnumerable<Lobby> All()
+        {
+            return Lobbies;
+        }
 
-    public void Delete(Lobby lobby)
-    {
-      throw new NotImplementedException();
+
+        public int Count()
+        {
+            return Lobbies.Count + Temporary.Count;
+        }
+
+        public void Delete(Lobby lobby)
+        {
+            Lobbies.Remove(lobby);
+        }
+
+        public Lobby GetTemporary()
+        {
+            throw new NotImplementedException();
+        }
     }
-  }
 }

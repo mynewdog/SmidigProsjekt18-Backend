@@ -25,9 +25,9 @@ namespace smidigprosjekt.Logic.Services
         private ILobbyService _lobbyService { get; set; }
         private AppConfiguration _appConfig;
         private IHubContext<TjommisHub> _hub { get; set; }
-
-        public LobbyWorker(IUserService userService, ILobbyService lobbyService, IOptions<AppConfiguration> appconfig,
-        IHubContext<TjommisHub> hubContext)
+        
+        public LobbyWorker(IUserService userService, ILobbyService lobbyService,
+            IOptions<AppConfiguration> appconfig, IHubContext<TjommisHub> hubContext)
         {
             _lobbyService = lobbyService;
             _userService = userService;
@@ -38,7 +38,6 @@ namespace smidigprosjekt.Logic.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 Console.WriteLine($"LobbyWorker task doing background work.");
@@ -55,8 +54,11 @@ namespace smidigprosjekt.Logic.Services
         public void ConnectUsersToLobby()
         {
             var hangoutUserCount = _userService.GetHangoutUserCount();
+            
+            //Send updates to all the connected clients 
             _userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("hangoutEvent", hangoutUserCount));
             _userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("infoGlobalEvent", _userService.Count()));
+
             if (hangoutUserCount >= _appConfig.MinimumPerLobby)
             {
                 var userList = _userService.GetHangoutUsers();
@@ -73,7 +75,6 @@ namespace smidigprosjekt.Logic.Services
                     if (room.Members.TryAdd(user.user.Id, user.user))
                     {
                         user.user.HangoutSearch = false;
-
                         _hub.Groups.AddToGroupAsync(user.user.ConnectionId, room.LobbyName);
                     }
                 }
