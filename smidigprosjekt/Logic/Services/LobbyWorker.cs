@@ -45,9 +45,42 @@ namespace smidigprosjekt.Logic.Services
                 await Task.Delay(10000, stoppingToken);
             }
         }
-        #endregion
 
         /// <summary>
+        /// Keep track of tags and weight of the rooms.
+        /// if same tag match, add 1 to weight.
+        /// </summary>
+        public void tempRoomInit()
+        {
+            /*
+             >30s>1min
+             <get>
+             <Fag[]> ++R
+             <skole> ++R
+             <interesser[]> ++R
+             */
+        }
+        #endregion
+        /// <summary>
+        /// Create new rooms every 10 sek
+        /// sudo sudo sudo
+        /// </summary>
+        /// <param name="user"></param>
+        public void pulseLobby(User user)
+        {
+            var userList = _userService.GetHangoutUsers();
+            //10 sek
+            foreach (var User in userList)
+            {
+                //getTempRoom()
+
+                //add.user -> tempRoom()
+            }
+        }
+        
+
+        /// <summary>
+        /// OLD CODE
         /// The task that is executed frequently
         /// Will create lobbies and notify clients
         /// </summary>
@@ -84,6 +117,7 @@ namespace smidigprosjekt.Logic.Services
 
             }
         }
+        /// OLD CODE
         // MatchUsers(var userList )
         /*
          * Get tempRoom() = new temp;

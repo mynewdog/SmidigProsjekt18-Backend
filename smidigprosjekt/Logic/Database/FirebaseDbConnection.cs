@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Database;
-using Firebase.Database;
 using Firebase.Database.Query;
 using smidigprosjekt.Models;
 
@@ -66,6 +65,25 @@ namespace smidigprosjekt.Logic.Database
                 userList.Add(user.Object);
             }
             return userList;
+        }
+
+        public static async Task saveRooms(IList<Lobby> rooms)
+        {
+            var client = GetClient();
+            await client.Child("ActiveRooms").PutAsync(rooms);
+        }
+
+        public static async Task<IList<Lobby>> loadRooms()
+        {
+            var client = GetClient();
+
+            var roomList = new List<Lobby>();
+            var data = await client.Child("ActiveRooms").OnceAsync<Lobby>();
+            foreach (var room in data)
+            {
+                roomList.Add(room.Object);
+            }
+            return roomList;
         }
     }
 }

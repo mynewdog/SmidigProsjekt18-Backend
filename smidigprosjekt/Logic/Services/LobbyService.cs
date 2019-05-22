@@ -1,4 +1,5 @@
-﻿using smidigprosjekt.Models;
+﻿using smidigprosjekt.Logic.Database;
+using smidigprosjekt.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,13 +33,35 @@ namespace smidigprosjekt.Logic.Services
         public void Add(Lobby lobby)
         {
             Lobbies.Add(lobby);
+            Task.Run(() => FirebaseDbConnection.saveRooms(Lobbies));
+        }
+
+        public void Merge(Lobby lobby1, Lobby lobby2)
+        {
+            //lobb1 ++ lobby2
+            // -> users lobby2) -||-.users
+            // delete lobby1
+        }
+
+        public void GetTempRoom(UserService user)
+        {
+            /*
+             for each(tempRoom)
+             {
+                if(tempRoom.match(User) => 1{
+                    let tempRoom
+                }
+                else
+                    let new tempRoom(User);
+             }
+             
+             */
         }
 
         public IEnumerable<Lobby> All()
         {
             return Lobbies;
         }
-
 
         public int Count()
         {
