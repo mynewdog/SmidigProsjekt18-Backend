@@ -31,11 +31,11 @@ namespace smidigprosjekt.Models
             }
             return false;
         }
-        public string storePassword(string password)
+        public void storePassword(string password)
         {
             var salt = CreateSalt(5);
             this.upwd_salt = salt;
-            this.encrypted_pwd = EncryptPassword(password);
+            this.encrypted_pwd = EncryptPassword(password,salt);
         }
         public static string EncryptPassword(string password, string salt)
         {

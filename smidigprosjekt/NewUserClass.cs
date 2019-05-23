@@ -13,5 +13,6 @@ namespace smidigprosjekt
         public String Email { get; set; }
         public String Institutt { get; set; }
         public String Studie { get; set; }
+        public String Password { get; set; }
     }
 }

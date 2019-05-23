@@ -65,7 +65,7 @@ namespace smidigprosjekt.Logic.Services
 
         public int Count()
         {
-            return Lobbies.Count + Temporary.Count;
+            return Lobbies.Count;
         }
 
         public void Delete(Lobby lobby)
