@@ -21,13 +21,13 @@ namespace smidigprosjekt.Logic.Services
     /// </summary>
     public class LobbyService : ILobbyService
     {
+        //List of the all the Lobbies
+        
         public List<Lobby> Lobbies { get; set; }
-        public List<Lobby> Temporary { get; set; } 
 
         public LobbyService()
         {
             Lobbies = new List<Lobby>();
-            Temporary = new List<Lobby>();
         }
         public void Add(Lobby lobby)
         {
@@ -38,8 +38,7 @@ namespace smidigprosjekt.Logic.Services
         {
             return Lobbies;
         }
-
-
+        
         public int Count()
         {
             return Lobbies.Count + Temporary.Count;
