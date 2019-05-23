@@ -63,7 +63,7 @@ namespace smidigprosjekt.Logic.Services
         User GetUserFromConnectionId(string connectionId);
         void UpdateUserAccessList();
         bool Validate(string username, string password);
-        bool RegisterUser(User user);
+        Task<bool> RegisterUser(User user);
     }
 
     public class UserSession
@@ -89,13 +89,13 @@ namespace smidigprosjekt.Logic.Services
             _userAccessListm.Wait();
             _userAccessList = _userAccessListm.Result;
         }
-        public bool RegisterUser(User user)
+        public async Task<bool> RegisterUser(User user)
         {
             if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) != null)
             {
-                var result = FirebaseDbConnection.CreateUser(user);
-                result.Wait();
-                _userAccessList.Append(result.Result.Object);
+                var result = await FirebaseDbConnection.CreateUser(user);
+                //result.Wait();
+                _userAccessList.Append(result.Object);
                 return true;
             }
             return false;

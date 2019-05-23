@@ -31,6 +31,12 @@ namespace smidigprosjekt.Models
             }
             return false;
         }
+        public string storePassword(string password)
+        {
+            var salt = CreateSalt(5);
+            this.upwd_salt = salt;
+            this.encrypted_pwd = EncryptPassword(password);
+        }
         public static string EncryptPassword(string password, string salt)
         {
             HashAlgorithm algorithm = new SHA256Managed();

@@ -45,9 +45,42 @@ namespace smidigprosjekt.Logic.Services
                 await Task.Delay(10000, stoppingToken);
             }
         }
-        #endregion
 
         /// <summary>
+        /// Keep track of tags and weight of the rooms.
+        /// if same tag match, add 1 to weight.
+        /// </summary>
+        public void tempRoomInit()
+        {
+            /*
+             >30s>1min
+             <get>
+             <Fag[]> ++R
+             <skole> ++R
+             <interesser[]> ++R
+             */
+        }
+        #endregion
+        /// <summary>
+        /// Create new rooms every 10 sek
+        /// sudo sudo sudo
+        /// </summary>
+        /// <param name="user"></param>
+        public void pulseLobby(User user)
+        {
+            var userList = _userService.GetHangoutUsers();
+            //10 sek
+            foreach (var User in userList)
+            {
+                //getTempRoom()
+
+                //add.user -> tempRoom()
+            }
+        }
+        
+
+        /// <summary>
+        /// OLD CODE
         /// The task that is executed frequently
         /// Will create lobbies and notify clients
         /// </summary>
@@ -63,6 +96,8 @@ namespace smidigprosjekt.Logic.Services
             {
                 var userList = _userService.GetHangoutUsers();
                 var rnd = new Random();
+
+                // MatchUsers(userList)
 
                 Lobby room = new Lobby()
                 {
@@ -82,5 +117,26 @@ namespace smidigprosjekt.Logic.Services
 
             }
         }
+        /// OLD CODE
+        // MatchUsers(var userList )
+        /*
+         * Get tempRoom() = new temp;
+         * get Room() = new room;
+         * foreach(var user in userList)
+         * {
+         *  if(user.user.fag[] == user.user.fag[]) // can be Klasse[] instead of fag[]
+         *      user.user.weightMatch = 4* // number of fag they match on
+         *  if(user.user.linje == user.user.linje)  
+         *      user.user.weightMatch = 3
+         *  if(user.user.skole == user.user.skole)  
+         *      user.user.weightMatch = 2
+         *  if(user.user.interresser[] == user.user.interesser[])  
+         *      user.user.weightMatch = 1+1* // number if interesser they match on // If they don't match on anything, have weight atleast 1
+         *  _hub.Groups.AddToGroupsAsync(user.user.ConnectonID, room.temp);    
+         * }     
+         * _hub.Groups. AddToGroupsAsync -> lamba function to only max users with the highest weightMatch left ();
+         * _hub.Clients.Group(room.LobbyName).SendAsync("JoinRoom", room);
+         * */
+
     }
 }
