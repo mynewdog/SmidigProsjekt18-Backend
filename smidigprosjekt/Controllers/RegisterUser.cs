@@ -8,7 +8,7 @@ using smidigprosjekt.Models;
 
 namespace smidigprosjekt.Controllers
 {
-  [Route("[controller]")]
+  [Route("api/[controller]")]
   [ApiController]
   public class RegisterUser : ControllerBase
   {
