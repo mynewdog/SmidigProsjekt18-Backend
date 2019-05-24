@@ -21,6 +21,11 @@ namespace smidigprosjekt.Models
 
         public string upwd_salt { get; set; }
         public string encrypted_pwd { get; set; }
+        public string Institutt { get; internal set; }
+        public string Studie { get; internal set; }
+        public string LastName { get; internal set; }
+        public string Email { get; internal set; }
+
         public bool IsPassword(string password)
         {
             int DEFAULT_SALT_SIZE = 5;

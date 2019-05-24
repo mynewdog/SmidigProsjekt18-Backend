@@ -91,7 +91,7 @@ namespace smidigprosjekt.Logic.Services
         }
         public async Task<bool> RegisterUser(User user)
         {
-            //todo:add class validation for all fields
+
             if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) != null)
             {
                 var result = await FirebaseDbConnection.CreateUser(user);
