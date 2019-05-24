@@ -75,7 +75,7 @@ namespace smidigprosjekt.Logic.Services
     public class UserService : IUserService
     {
         public ConcurrentDictionary<User, IClientProxy> _activeUsers;
-        public IEnumerable<User> _userAccessList;
+        public IList<User> _userAccessList;
 
         public UserService()
         {
@@ -92,11 +92,11 @@ namespace smidigprosjekt.Logic.Services
         public async Task<bool> RegisterUser(User user)
         {
 
-            if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) != null)
+            if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) == null)
             {
                 var result = await FirebaseDbConnection.CreateUser(user);
                 //result.Wait();
-                _userAccessList.Append(result.Object);
+                _userAccessList.Add(result.Object);
                 return true;
             }
             return false;
