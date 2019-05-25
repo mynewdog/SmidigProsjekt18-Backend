@@ -13,6 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using smidigprosjekt.Logic.Services;
 using smidigprosjekt.Models;
+using smidigprosjekt.Logic.Database;
+using Microsoft.Extensions.Logging;
 
 namespace smidigprosjekt
 {
@@ -91,11 +93,16 @@ namespace smidigprosjekt
             //Add signalR service
             services.AddSignalR();
             services.RegisterServices();
+            services.AddLogging();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
+            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddDebug();
+
             //Use CORS policy
             app.UseCors("AllowAll");
 
@@ -133,8 +140,7 @@ namespace smidigprosjekt
 
             //Use MVC
             app.UseMvc();
-
-
+            //FirebaseDbConnection.initializeDB();
         }
     }
 }

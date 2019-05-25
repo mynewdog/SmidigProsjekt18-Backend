@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -11,20 +12,20 @@ namespace smidigprosjekt.Models
     {
         public int Id { get; set; }
         public string ConnectionId { get; set; }
-
         public string Username { get; set; }
         public UserConfiguration Configuration { get; set; }
         public bool HangoutSearch { get; set; }
         public List<Lobby> Lobbies { get; set; }
         //The client connected state
         public bool Connected { get; set; }
-
+        
         public string upwd_salt { get; set; }
         public string encrypted_pwd { get; set; }
-        public string Institutt { get; internal set; }
-        public string Studie { get; internal set; }
-        public string LastName { get; internal set; }
-        public string Email { get; internal set; }
+        public string Institutt { get;  set; }
+        public string Studie { get;  set; }
+        public string LastName { get;  set; }
+        public string Email { get;  set; }
+        public string Key { get;  set; }
 
         public bool IsPassword(string password)
         {
@@ -59,7 +60,10 @@ namespace smidigprosjekt.Models
             // Return a Base64 string representation of the random number.
             return Convert.ToBase64String(buff);
         }
-
+        public override string ToString()
+        {
+            return $"${this.Username} : {this.LastName}";
+        }
     }
     public class UserConfiguration
     {

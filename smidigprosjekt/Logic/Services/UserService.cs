@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using smidigprosjekt.Logic.Database;
 using smidigprosjekt.Models;
 using System;
@@ -18,6 +19,8 @@ namespace smidigprosjekt.Logic.Services
     /// </summary>
     public interface IUserService
     {
+        IList<InterestItem> Interests { get; }
+
         /// <summary>
         /// Gets all users
         /// </summary>
@@ -39,7 +42,7 @@ namespace smidigprosjekt.Logic.Services
         /// </summary>
         /// <param name="newUser">An object containing the user attributes</param>
         /// <param name="Caller">An object containing the connection to client</param>
-        void Add(User newUser, IClientProxy Caller);
+        void ConnectUser(User newUser, IClientProxy Caller);
 
         /// <summary>
         /// Gets the total number of users in hangout
@@ -47,6 +50,7 @@ namespace smidigprosjekt.Logic.Services
         /// <returns></returns>
         int GetHangoutUserCount();
         IEnumerable<UserSession> GetHangoutUsers();
+        User GetUserConfiguration(string userName);
 
         /// <summary>
         /// Disconnects a user from the userlist
@@ -76,22 +80,36 @@ namespace smidigprosjekt.Logic.Services
     {
         public ConcurrentDictionary<User, IClientProxy> _activeUsers;
         public IList<User> _userAccessList;
+        public IList<InterestItem> Interests { get; set; }
+        public ILogger logger { get; }
 
-        public UserService()
+        public UserService(ILoggerFactory loggerFactory)
         {
+            logger = loggerFactory.CreateLogger<UserService>();
+            logger.Log(LogLevel.Information,"User Service Started.");
             _activeUsers = new ConcurrentDictionary<User, IClientProxy>();
             UpdateUserAccessList();
+            UpdateInterestList();
+        }
+
+        private void UpdateInterestList()
+        {
+            logger.Log(LogLevel.Information, "Downloading Interest List...");
+            var _interestList = FirebaseDbConnection.GetInterests();
+            Interests = _interestList.Result;
         }
 
         public void UpdateUserAccessList()
         {
+            logger.Log(LogLevel.Information, "Downloading User Access List...");
             var _userAccessListm = FirebaseDbConnection.GetUsers();
             _userAccessListm.Wait();
             _userAccessList = _userAccessListm.Result;
         }
+
         public async Task<bool> RegisterUser(User user)
         {
-
+            logger.Log(LogLevel.Information, "Registering user: " + user.ToString());
             if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) == null)
             {
                 var result = await FirebaseDbConnection.CreateUser(user);
@@ -101,9 +119,12 @@ namespace smidigprosjekt.Logic.Services
             }
             return false;
         }
-        public void Add(User newUser, IClientProxy Caller)
+        public void ConnectUser(User newUser, IClientProxy Caller)
         {
-            _activeUsers.TryAdd(newUser, Caller);
+            if (_activeUsers.TryAdd(newUser, Caller))
+            {
+                Console.WriteLine("User connected: " + newUser.ToString());
+            }
             truncateList(); //clean up list so we don't run out of memory
         }
         public void truncateList()
@@ -154,6 +175,11 @@ namespace smidigprosjekt.Logic.Services
         public IEnumerable<UserSession> GetHangoutUsers()
         {
             return _activeUsers.Where(e => e.Key.HangoutSearch).Select(e => new UserSession() { proxy = e.Value, user = e.Key });
+        }
+
+        public User GetUserConfiguration(string userName)
+        {
+            return _userAccessList.Where(e => e.Username.Contains(userName,StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
         }
     }
 

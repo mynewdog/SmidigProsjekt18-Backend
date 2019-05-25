@@ -24,22 +24,36 @@ namespace smidigprosjekt.Logic.Database
             return firebaseClient;
         }
         
-        public static async Task initializeDB()
+        public static void initializeDB()
         {
-            var salt = User.CreateSalt(5);
-            await CreateUser(new User()
+            /*
+            var client = GetClient();
+            var i = new List<InterestItem>()
             {
-                Configuration = new UserConfiguration()
-                {
-                    Interests = new List<string>()
-                    {
-                        "Football","IT"
-                    }
+                new InterestItem() {Id = 0,
+                    Category = "Skole",
+                    Name = "Eksamen"
                 },
-                Username = "test",
-                upwd_salt = salt,
-                encrypted_pwd = User.EncryptPassword("test", salt)
-            });
+                new InterestItem() {Id = 1,
+                    Category = "Sport",
+                    Name = "Fotball"},
+                new InterestItem() {Id = 2,
+                    Category = "Kultur",
+                    Name = "Kino"},
+                new InterestItem() {Id = 3,
+                    Category = "Jobb",
+                    Name = "Jobbsøknad"},
+                new InterestItem() {Id = 4,
+                    Category = "Mat og Drikke",
+                    Name = "Burger"},
+                new InterestItem() {Id = 5,
+                    Category = "Mat og Drikke",
+                    Name = "Øl"
+                }
+            };
+            i.ForEach(async e => {
+                await client.Child("Interests").PostAsync(e);
+             });*/
         }
         
         private static async Task updateOrCreateUser(User user)
@@ -60,11 +74,22 @@ namespace smidigprosjekt.Logic.Database
             var data = await GetClient().Child("users").OnceAsync<User>();
             foreach (var user in data)
             {
-                Console.WriteLine("Key:" + user.Key);
-                Console.WriteLine("Found user:" + user.Object.Username);
+                user.Object.Key = user.Key;
                 userList.Add(user.Object);
             }
             return userList;
+        }
+
+        public static async Task<List<InterestItem>> GetInterests()
+        {
+            var client = GetClient();
+            var list = new List<InterestItem>();
+            var data = await client.Child("Interests").OnceAsync<InterestItem>();
+            foreach (var item in data)
+            {
+                list.Add(item.Object);
+            }
+            return list;
         }
 
         public static async Task saveRooms(IList<Lobby> rooms)
