@@ -88,6 +88,7 @@ namespace smidigprosjekt.Hubs
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             User user = _userService.GetUserFromConnectionId(Context.ConnectionId);
+            user.Connected = false;
             await Clients.All.SendAsync("messageBroadcastEvent", "system", user.Username + " disconnected.");
             _userService.Disconnect(Context.ConnectionId);
         }
@@ -102,6 +103,6 @@ namespace smidigprosjekt.Hubs
     public class UserConnectionInfo
     {
         public string Username { get; set; }
-        public List<Lobby> Lobbies {get;set;}
+        public HashSet<Lobby> Lobbies {get;set;}
     }
 }

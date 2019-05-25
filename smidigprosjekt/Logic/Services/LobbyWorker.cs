@@ -60,16 +60,20 @@ namespace smidigprosjekt.Logic.Services
         public void ConnectUsersToLobby() // PulseLobby
         {
             var hangoutUserCount = _userService.GetHangoutUserCount();
-            
+
             //Send updates to all the connected clients 
-            _userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("hangoutEvent", hangoutUserCount));
-            _userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("infoGlobalEvent", _userService.Count()));
+            //_userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("hangoutevent", new HangoutEventMessage() {
+
+            _hub.Clients.All.SendAsync("hangoutevent", new HangoutEventMessage() { TimeStamp = DateTime.UtcNow,
+                TotalUsers = hangoutUserCount
+            });
+            //_userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("infoGlobalEvent", _userService.Count()));
 
             if (hangoutUserCount >= _appConfig.MinimumPerLobby)
             {
-                var userList = _userService.GetHangoutUsers();
+                var userSessionList = _userService.GetHangoutUsers();
+                
 
-                var temp = _lobbyService.GetTemporary();
                 // Can be internal value of Lobby.cs as [] or list or map<>
                 int Kristiania = 0; 
                 //int Skole2 = 0;
@@ -78,35 +82,49 @@ namespace smidigprosjekt.Logic.Services
                 //int Studie2 = 0;
                 //int Studie3 = 0;
 
-                foreach (var user in userList)
+                foreach (var userSession in userSessionList)
                 {
-                    if (temp.Members.TryAdd(user.user.Id, user.user) && (temp.Members.Count < temp.MaxUsers+1))
+                    var temp = _lobbyService.GetTemporary(userSession.user);
+                    //Send update that to other clients
+                    _hub.Clients.Group(temp.LobbyName).SendAsync("userjoin",userSession.user.ConvertToSanitizedUser());
+                    userSession.proxy.SendAsync("lobbyinfo", temp.ConvertToSanitizedLobby());
+
+                    temp.Members.Add(userSession.user);
+                    _hub.Groups.AddToGroupAsync(userSession.user.ConnectionId, temp.LobbyName);
+                    userSession.user.HangoutSearch = false;
+                    userSession.user.Lobbies.Add(temp);
+
+                    if ((temp.Members.Count < temp.MaxUsers+1))
                     {
-                        user.user.HangoutSearch = false;
                         
                         // Lobby's internal match scores, so that the group chat composistion will change.
                         // Match user to the lobbies composition as close as possible.
                         // Init if lobby was just created, and first member will tag it.
                         if(temp.Members.Count == 1)
                         {
-                            temp.Institutt = user.user.Institutt;
-                            temp.Studie = user.user.Studie;
+                            temp.Institutt = userSession.user.Institutt;
+                            temp.Studie = userSession.user.Studie;
                         }
-                        if(user.user.Institutt == temp.Institutt)
+                        if(userSession.user.Institutt == temp.Institutt)
                         {
                             Kristiania++; // adds to composition
                         }
-                        if (user.user.Studie == temp.Studie)
+                        if (userSession.user.Studie == temp.Studie)
                         {
                             Studie1++; // adds to composition
                         }
                         // will send the room to sorting, if full will joinable=false 
                         //therefor not become a new temp room in GetTemporary()
                         _lobbyService.SendRoom(temp); // TODO: send composition match score for merging
-                        _hub.Groups.AddToGroupAsync(user.user.ConnectionId, temp.LobbyName);
                     }
                 }
             }
         }
+    }
+
+    public class HangoutEventMessage
+    {
+        public DateTime TimeStamp { get; set; }
+        public int TotalUsers { get; set; }
     }
 }

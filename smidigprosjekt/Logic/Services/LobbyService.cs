@@ -16,7 +16,7 @@ namespace smidigprosjekt.Logic.Services
         void Delete(Lobby lobby);
         void SendRoom(Lobby lobby);
         int Count();
-        Lobby GetTemporary();
+        Lobby GetTemporary(User user);
     }
     /// <summary>
     /// Keeps a list of lobbies in memory,
@@ -38,7 +38,6 @@ namespace smidigprosjekt.Logic.Services
         // Active rooms save to Firebase
         public void Add(Lobby lobby)
         {
-            Lobbies.Add(lobby);
             Task.Run(() => FirebaseDbConnection.saveRooms(Lobbies));
         }
         /// <summary>
@@ -52,7 +51,7 @@ namespace smidigprosjekt.Logic.Services
                 if (lobby.MaxUsers == lobby.Members.Count) // Room reach max size
                 {
                     lobby.Joinable = false; // no longer in the pool of temp rooms
-                    _hub.Clients.Group(lobby.LobbyName).SendAsync("JoinRoom", lobby);
+                    _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby);
                     Add(lobby); // Firebase
                 }
                 else
@@ -99,25 +98,33 @@ namespace smidigprosjekt.Logic.Services
             Lobbies.Remove(lobby);
         }
 
-        public Lobby GetTemporary()
+        public Lobby GetTemporary(User user)
         {
             var rnd = new Random();
+            var rndId = rnd.Next();
             var availableRooms = Lobbies.Where(e => e.Joinable).OrderByDescending(e => e.Members.Count);
             // Creates a new room
             if (availableRooms.Count() == 0)
             {
                 Lobby room = new Lobby()
                 {
-                    Id = rnd.Next(),
-                    Members = new System.Collections.Concurrent.ConcurrentDictionary<int, User>(),
+                    Studie = user.Studie,
+                    Institutt = user.Institutt,
+                    LobbyName = $"{user.Institutt} - {user.Studie}: {rndId}",
+                    Created = DateTime.UtcNow,
+                    Joinable = true,
+                    Id = rndId,
+                    Members = new HashSet<User>(),
                     Messages = new List<Message>(),
                     MaxUsers = _appConfig.MaximumPerLobby
                 };
+                Lobbies.Add(room);
                 return room;
             }
             // Returns the most populated room
             else
             {
+                //Create algorithm to sort the first room to be returned
                 return availableRooms.First();
             }
         }
