@@ -113,7 +113,7 @@ namespace smidigprosjekt.Logic.Services
             if (_userAccessList.FirstOrDefault(e => e.Username.Contains(user.Username, StringComparison.InvariantCultureIgnoreCase)) == null)
             {
                 var result = await FirebaseDbConnection.CreateUser(user);
-                //result.Wait();
+                result.Object.Key = result.Key;
                 _userAccessList.Add(result.Object);
                 return true;
             }

@@ -28,7 +28,8 @@ namespace smidigprosjekt.Controllers
                 Institutt = newUser.Institutt,
                 Studie = newUser.Studie,
                 LastName = newUser.LastName,
-                Email = newUser.Email
+                Email = newUser.Email,
+                Lobbies = new HashSet<Lobby>(),
             };
             user.storePassword(newUser.Password);
 

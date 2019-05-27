@@ -67,15 +67,18 @@ namespace smidigprosjekt.Logic.Services
         private void NotifyClients()
         {
 
-            var hangoutUserCount = _userService.GetHangoutUserCount();
             //Send updates to all the connected clients 
             //_userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("hangoutevent", new HangoutEventMessage() {
-
-            _hub.Clients.All.SendAsync("hangoutevent", new HangoutEventMessage()
-            {
-                TimeStamp = DateTime.UtcNow,
-                TotalUsers = hangoutUserCount
-            });
+            foreach (var lobby in _lobbyService.All().Where(e=>e.Joinable)) {
+                var hangoutUserCount = lobby.Members.Count;
+                _hub.Clients.Group(lobby.LobbyName).SendAsync("hangoutevent", new HangoutEventMessage()
+                {
+                    Room = lobby.ConvertToSanitizedLobby(),
+                    TimeStamp = DateTime.UtcNow,
+                    TotalUsers = hangoutUserCount,
+                    TimeRunning = (DateTime.UtcNow - lobby.Created).TotalSeconds
+                });
+            };
             //_userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("infoGlobalEvent", _userService.Count()));
 
         }
@@ -98,11 +101,13 @@ namespace smidigprosjekt.Logic.Services
             // Output useful statistics during debugging to test if this is working as intended
             _logger.LogInformation(
 @"LobbyWorkerInfo:
-Temporary Lobbies: {0}\
-Total Lobbies: {1}
+Temporary Lobbies:  {0}     Total users in active lobbies: {1}
+Total Lobbies:      {2}     Total users in temp lobbies:   {3}
 "
 , _lobbyService.All().Where(e => e.Joinable).Count()
+, _lobbyService.All().Where(e => !e.Joinable).Sum(e => e.Members.Count)
 , _lobbyService.All().Count()
+, _lobbyService.All().Where(e=>e.Joinable).Sum(e=>e.Members.Count)
 );
 
 
@@ -122,10 +127,10 @@ Total Lobbies: {1}
         /// </summary>
         public void ConnectUsersToLobby() // PulseLobby
         {
-            var hangoutUserCount = _userService.GetHangoutUserCount();
+            //var hangoutUserCount = _userService.GetHangoutUserCount();
 
-            if (hangoutUserCount >= _appConfig.MinimumPerLobby)
-            {
+            //if (hangoutUserCount >= _appConfig.MinimumPerLobby)
+            //{
                 var userSessionList = _userService.GetHangoutUsers();
                 // Can be internal value of Lobby.cs as [] or list or map<>
                 int Kristiania = 0; 
@@ -174,7 +179,7 @@ Total Lobbies: {1}
                         //therefor not become a new temp room in GetTemporary()
                     }
                 }
-            }
+            //}
 
 
         }
@@ -184,5 +189,7 @@ Total Lobbies: {1}
     {
         public DateTime TimeStamp { get; set; }
         public int TotalUsers { get; set; }
+        public double TimeRunning { get; internal set; }
+        public TjommisLobby Room { get; internal set; }
     }
 }
