@@ -75,6 +75,7 @@ namespace smidigprosjekt.Logic.Database
             foreach (var user in data)
             {
                 user.Object.Key = user.Key;
+                if (user.Object.Lobbies == null) user.Object.Lobbies = new HashSet<Lobby>();
                 userList.Add(user.Object);
             }
             return userList;
@@ -92,10 +93,15 @@ namespace smidigprosjekt.Logic.Database
             return list;
         }
 
-        public static async Task saveRooms(IList<Lobby> rooms)
+        public static async Task addRoom(IList<Lobby> rooms)
         {
             var client = GetClient();
-            await client.Child("ActiveRooms").PutAsync(rooms);
+            await client.Child("ActiveRooms").PostAsync(rooms);
+        }
+        public static async Task removeRoom(Lobby r)
+        {
+            var client = GetClient();
+            await client.Child("ActiveRooms").Child(r.Key).DeleteAsync();
         }
 
         public static async Task<IList<Lobby>> loadRooms()
@@ -106,6 +112,7 @@ namespace smidigprosjekt.Logic.Database
             var data = await client.Child("ActiveRooms").OnceAsync<Lobby>();
             foreach (var room in data)
             {
+                room.Object.Key = room.Key;
                 roomList.Add(room.Object);
             }
             return roomList;

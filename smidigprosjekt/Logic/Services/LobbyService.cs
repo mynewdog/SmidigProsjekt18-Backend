@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace smidigprosjekt.Logic.Services
 {
@@ -16,7 +18,10 @@ namespace smidigprosjekt.Logic.Services
         void Delete(Lobby lobby);
         void SendRoom(Lobby lobby);
         int Count();
-        Lobby GetTemporary(User user);
+        //Get temporary room based on user criteria
+        Lobby FindMatchingLobby(User user);
+        IEnumerable<Lobby> GetTemporaryRooms();
+
     }
     /// <summary>
     /// Keeps a list of lobbies in memory,
@@ -28,17 +33,27 @@ namespace smidigprosjekt.Logic.Services
         private AppConfiguration _appConfig;
         private IUserService _userService { get; set; }
         private IHubContext<TjommisHub> _hub { get; set; }
+        private ILogger<LobbyService> _logger;
+
         //List of the all the Lobbies
         public List<Lobby> Lobbies { get; set; }
 
-        public LobbyService()
+        public LobbyService(IOptions<AppConfiguration> appconfig, ILoggerFactory loggerFactory, IHubContext<TjommisHub> tjommisHub)
         {
+            _logger = loggerFactory.CreateLogger<LobbyService>();
             Lobbies = new List<Lobby>();
+            _appConfig = appconfig.Value;
+            _hub = tjommisHub;
         }
         // Active rooms save to Firebase
         public void Add(Lobby lobby)
         {
-            Task.Run(() => FirebaseDbConnection.saveRooms(Lobbies));
+            Task.Run(() => FirebaseDbConnection.addRoom(Lobbies));
+        }
+        public void Delete(Lobby lobby)
+        {
+            Task.Run(() => FirebaseDbConnection.removeRoom(lobby));
+            Lobbies.Remove(lobby);
         }
         /// <summary>
         /// TODO:
@@ -46,29 +61,28 @@ namespace smidigprosjekt.Logic.Services
         /// <param name="lobby"></param>
         public void SendRoom(Lobby lobby)// add parameter of composistion tags
         {
-            if(Count() > 1) // too few active rooms
+            if (lobby.MaxUsers == lobby.Members.Count) // Room reach max size
             {
-                if (lobby.MaxUsers == lobby.Members.Count) // Room reach max size
-                {
-                    lobby.Joinable = false; // no longer in the pool of temp rooms
-                    _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby);
-                    Add(lobby); // Firebase
-                }
-                else
-                {
-                    // Try to merge with most equal room composition.
-                    // then various not filled rooms
-                    // recursive asking after merge to see if rooms are max.
-
-                }
-            }
-            // Only 1 room active, not wait for users, no matching
-            else
-            {
+                _logger.LogInformation("Lobby full! :) sending joinable room to closed lobby");
                 lobby.Joinable = false; // no longer in the pool of temp rooms
-                _hub.Clients.Group(lobby.LobbyName).SendAsync("JoinRoom", lobby);
+                _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby);
                 Add(lobby); // Firebase
-            }            
+            }
+            else if (lobby.Created.AddSeconds(10) < DateTime.UtcNow && lobby.Members.Count > 1)
+            {
+                _logger.LogInformation("Lobby {0} is getting old, sending lobby to active lobby, has users {1}", lobby.LobbyName, lobby.Members.Count);
+                lobby.Joinable = false;
+                try
+                {
+
+                    _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby.ConvertToSanitizedLobby());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                Add(lobby);
+            }
         }
 
         /// <summary>
@@ -93,24 +107,22 @@ namespace smidigprosjekt.Logic.Services
             return Lobbies.Count;
         }
 
-        public void Delete(Lobby lobby)
-        {
-            Lobbies.Remove(lobby);
-        }
-
-        public Lobby GetTemporary(User user)
+        public Lobby FindMatchingLobby(User user)
         {
             var rnd = new Random();
             var rndId = rnd.Next();
             var availableRooms = Lobbies.Where(e => e.Joinable).OrderByDescending(e => e.Members.Count);
-            // Creates a new room
-            if (availableRooms.Count() == 0)
+            // Creates a new room 
+            //fix matching algoritm
+            if (availableRooms?.Count() < 1)
             {
+                _logger.LogInformation("Creating new room");
+                //Create a temporary room
                 Lobby room = new Lobby()
                 {
                     Studie = user.Studie,
                     Institutt = user.Institutt,
-                    LobbyName = $"{user.Institutt} - {user.Studie}: {rndId}",
+                    LobbyName = $"{user.Institutt.Trim()}-{user.Studie.Trim()}-{rndId}",
                     Created = DateTime.UtcNow,
                     Joinable = true,
                     Id = rndId,
@@ -127,6 +139,11 @@ namespace smidigprosjekt.Logic.Services
                 //Create algorithm to sort the first room to be returned
                 return availableRooms.First();
             }
+        }
+
+        public IEnumerable<Lobby> GetTemporaryRooms()
+        {
+            return Lobbies.Where(e => e.Joinable);
         }
     }
 }

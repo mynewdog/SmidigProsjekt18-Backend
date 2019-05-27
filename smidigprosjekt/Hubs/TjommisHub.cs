@@ -5,6 +5,7 @@ using smidigprosjekt.Logic.Services;
 using smidigprosjekt.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -15,19 +16,41 @@ namespace smidigprosjekt.Hubs
     public class TjommisHub : Hub
     {
         private IUserService _userService;
-        public TjommisHub(IUserService userService)
+        private ILobbyService _lobbyService;
+
+        public TjommisHub(IUserService userService, ILobbyService lobbyService)
         {
             _userService = userService;
+            _lobbyService = lobbyService;
         }
         /// <summary>
         /// Sends a message to all clients
         /// </summary>
         /// <param name="message">Message to send</param>
         /// <returns>A task that represents the asychronous communication</returns>
-        public async Task SendMessage(string message)
+        public async Task SendMessage(string lobby, string message)
         {
+            
             string getuser = Context.User?.FindFirst(ClaimTypes.Name)?.Value;
-            await Clients.All.SendAsync("messageBroadcastEvent", getuser, message);
+            //Check if user is allowed
+            if (_userService.GetUserConfiguration(getuser)?
+                .Lobbies.FirstOrDefault(l => l.LobbyName.Contains(lobby)) == null) return;
+
+            Message msg = new Message()
+            {
+                //Lobby = //_userService.GetUserConfiguration(getuser).Lobbies.First().ConvertToSanitizedLobby(),
+                Text = message,
+                Timestamp = DateTime.UtcNow,
+                Type = MessageType.User,
+                User = getuser //_userService.GetUserConfiguration(getuser).ConvertToSanitizedUser()
+            };
+            
+            
+            await Clients.Group(lobby).SendAsync("message",lobby, msg);
+
+            var room = _lobbyService.All().Where(e => e.LobbyName == lobby).First();
+            //save messages for reloading
+            room.Messages.Add(msg);
         }
 
         public async Task Hangout()
@@ -62,9 +85,9 @@ namespace smidigprosjekt.Hubs
             {
                 throw new Exception("Cannot identify user with connectionid: " + Context.ConnectionId);
             };
+            
             user.Connected = true;
             user.ConnectionId = Context.ConnectionId;
-            _userService.ConnectUser(user, Clients.Caller);
 
             await Clients.Caller.SendAsync("infoConnectEvent", new ConnectionEventInfo()
             {
@@ -75,9 +98,11 @@ namespace smidigprosjekt.Hubs
                 },
                 InterestList = _userService.Interests,
             });
+            _userService.ConnectUser(user, Clients.Caller);
 
             await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
             await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
+
         }
 
         /// <summary>

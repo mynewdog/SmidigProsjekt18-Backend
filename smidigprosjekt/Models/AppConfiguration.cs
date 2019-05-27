@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace smidigprosjekt.Models
 {
-  public class AppConfiguration
-  {
-    public int MinimumPerLobby { get; set; }
-    public int MaximumPerLobby { get; set; }
-  }
+    public class AppConfiguration
+    {
+        public int MinimumPerLobby { get; set; }
+        public int MaximumPerLobby { get; set; }
+        public int LobbyWorkerDelay { get; set; }
+    }
 }

@@ -123,7 +123,12 @@ namespace smidigprosjekt.Logic.Services
         {
             if (_activeUsers.TryAdd(newUser, Caller))
             {
+                
                 Console.WriteLine("User connected: " + newUser.ToString());
+            }
+            else
+            {
+                Console.WriteLine("User allready logged in...");
             }
             truncateList(); //clean up list so we don't run out of memory
         }
