@@ -68,6 +68,7 @@ namespace smidigprosjekt.Logic.Services
         void UpdateUserAccessList();
         bool Validate(string username, string password);
         Task<bool> RegisterUser(User user);
+        Task<bool> UpdateUser(User user);
     }
 
     public class UserSession
@@ -185,6 +186,19 @@ namespace smidigprosjekt.Logic.Services
         public User GetUserConfiguration(string userName)
         {
             return _userAccessList.Where(e => e.Username.Contains(userName,StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+        }
+
+        public async Task<bool> UpdateUser(User user)
+        {
+            try
+            {
+                await FirebaseDbConnection.UpdateUser(user);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 

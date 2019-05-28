@@ -15,6 +15,7 @@ using smidigprosjekt.Logic.Services;
 using smidigprosjekt.Models;
 using smidigprosjekt.Logic.Database;
 using Microsoft.Extensions.Logging;
+using DotNetify;
 
 namespace smidigprosjekt
 {
@@ -87,11 +88,13 @@ namespace smidigprosjekt
                                                                           .AllowAnyHeader()
                                                                           .AllowCredentials()));
 
-            //Add model view controller for static pages
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             //Add signalR service
             services.AddSignalR();
+            services.AddDotNetify();
+            //Add model view controller for static pages
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
             services.RegisterServices();
             services.AddLogging();
 
@@ -128,6 +131,8 @@ namespace smidigprosjekt
             //Use static files in wwwroot
             app.UseStaticFiles();
 
+
+
             //do not use app.UseHttpsRedirection() -> We need to authorize using proxy during development
             //Use HTTPS redirection when going live
 
@@ -136,10 +141,15 @@ namespace smidigprosjekt
             app.UseSignalR(routes =>
             {
                 routes.MapHub<TjommisHub>("/tjommisHub");
+                routes.MapDotNetifyHub();
             });
+
+            app.UseDotNetify();
+
 
             //Use MVC
             app.UseMvc();
+
             //FirebaseDbConnection.initializeDB();
         }
     }

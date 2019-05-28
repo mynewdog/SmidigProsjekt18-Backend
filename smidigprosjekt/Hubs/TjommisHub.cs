@@ -52,7 +52,29 @@ namespace smidigprosjekt.Hubs
             //save messages for reloading
             room.Messages.Add(msg);
         }
+        public async Task<ConnectionEventInfo> UpdateInterests(List<string> Interests)
+        {
+            var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
+            if (user != null)
+            {
+                user.Configuration.Interests = Interests;
+                await _userService.UpdateUser(user);
 
+
+                return new ConnectionEventInfo()
+                {
+                    UserInfo = new UserConnectionInfo()
+                    {
+                        Username = user.Username,
+                        Interests = user.Configuration.Interests,
+                        Lobbies = user.Lobbies
+                    },
+                    InterestList = _userService.Interests,
+                };
+                
+            }
+            return null;
+        }
         public async Task Hangout()
         {
             var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
