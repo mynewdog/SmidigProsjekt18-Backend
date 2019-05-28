@@ -30,6 +30,10 @@ namespace smidigprosjekt.Controllers
                 LastName = newUser.LastName,
                 Email = newUser.Email,
                 Lobbies = new HashSet<Lobby>(),
+                Configuration = new UserConfiguration()
+                {
+                    Interests = new List<string>()
+                }
             };
             user.storePassword(newUser.Password);
 

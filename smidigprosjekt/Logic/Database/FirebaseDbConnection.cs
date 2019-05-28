@@ -66,7 +66,14 @@ namespace smidigprosjekt.Logic.Database
         {
             var client = GetClient();
             var newuser = await client.Child("users").PostAsync(user);
+            user.Key = newuser.Key;
             return newuser;
+        }
+        public static async Task UpdateUser(User user)
+        {
+            var client = GetClient();
+            await client.Child("users").Child(user.Key).PutAsync(user);
+            return;
         }
         public static async Task<IList<User>> GetUsers()
         {
@@ -76,6 +83,10 @@ namespace smidigprosjekt.Logic.Database
             {
                 user.Object.Key = user.Key;
                 if (user.Object.Lobbies == null) user.Object.Lobbies = new HashSet<Lobby>();
+                if (user.Object.Configuration == null) {
+                    user.Object.Configuration = new UserConfiguration();
+                    user.Object.Configuration.Interests = new List<string>();
+                }
                 userList.Add(user.Object);
             }
             return userList;

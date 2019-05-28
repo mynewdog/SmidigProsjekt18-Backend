@@ -68,7 +68,7 @@ namespace smidigprosjekt.Logic.Services
                 _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby);
                 Add(lobby); // Firebase
             }
-            else if (lobby.Created.AddSeconds(60) < DateTime.UtcNow && lobby.Members.Count > 1)
+            else if (lobby.Created.AddSeconds(_appConfig.LobbyHangTimeout) < DateTime.UtcNow && lobby.Members.Count > 1)
             {
                 _logger.LogInformation("Lobby {0} is getting old, sending lobby to active lobby, has users {1}", lobby.LobbyName, lobby.Members.Count);
                 lobby.Joinable = false;

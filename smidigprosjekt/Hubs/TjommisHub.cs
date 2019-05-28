@@ -94,6 +94,7 @@ namespace smidigprosjekt.Hubs
                 UserInfo = new UserConnectionInfo()
                 {
                     Username = user.Username,
+                    Interests = user.Configuration.Interests,
                     Lobbies = user.Lobbies
                 },
                 InterestList = _userService.Interests,
@@ -129,5 +130,6 @@ namespace smidigprosjekt.Hubs
     {
         public string Username { get; set; }
         public HashSet<Lobby> Lobbies {get;set;}
+        public List<string> Interests { get; internal set; }
     }
 }

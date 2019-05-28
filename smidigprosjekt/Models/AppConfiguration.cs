@@ -10,5 +10,6 @@ namespace smidigprosjekt.Models
         public int MinimumPerLobby { get; set; }
         public int MaximumPerLobby { get; set; }
         public int LobbyWorkerDelay { get; set; }
+        public double LobbyHangTimeout { get; set; }
     }
 }
