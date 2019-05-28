@@ -1,16 +1,25 @@
 'use strict';
 
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
 module.exports = {
-  mode: 'development',
-  entry: { main: './src/index.js' },
-  output: {
-    path: __dirname + '/wwwroot/dist',
-    publicPath: '/dist/'
-  },
-  resolve: {
-    modules: ['src', 'node_modules']
-  },
-  module: {
-    rules: [{ test: /\.jsx?$/, use: 'babel-loader', exclude: /node_modules/ }]
-  }
+    mode: 'development',
+    entry: { main: './src/index.js' },
+    output: {
+        path: __dirname + '/wwwroot/dist',
+        publicPath: '/dist/'
+    },
+    resolve: {
+        modules: ['src', 'node_modules'],
+        extensions: ['.js', '.jsx', '.tsx']
+    },
+    module: {
+        rules: [{ test: /\.jsx?$/, use: 'babel-loader', exclude: /node_modules/ },
+        { test: /\.tsx?$/, use: 'awesome-typescript-loader?silent=true' },
+        { test: /\.css$/, use: [MiniCssExtractPlugin.loader, 'css-loader?minimize'] },
+        { test: /\.svg$/, use: 'svg-url-loader?noquotes=true' },
+        { test: /\.(png|jpg|jpeg|gif)$/, use: 'url-loader?limit=25000' }
+        ]
+    },
+    plugins: [new MiniCssExtractPlugin()]
 };

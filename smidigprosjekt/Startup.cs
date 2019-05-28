@@ -17,6 +17,7 @@ using smidigprosjekt.Logic.Database;
 using Microsoft.Extensions.Logging;
 using DotNetify;
 using Microsoft.AspNetCore.SpaServices.Webpack;
+using DotNetify.Security;
 
 namespace smidigprosjekt
 {
@@ -94,8 +95,8 @@ namespace smidigprosjekt
             services.AddSignalR();
             services.AddDotNetify();
             //Add model view controller for static pages
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
             services.RegisterServices();
             services.AddLogging();
 
@@ -121,6 +122,15 @@ namespace smidigprosjekt
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+
+                // Optional: utilize webpack hot reload feature.
+                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                {
+                    HotModuleReplacement = true,
+                    HotModuleReplacementClientOptions = new Dictionary<string, string> { { "reload", "true" } },
+                });
+
             }
             else
             {
@@ -131,7 +141,7 @@ namespace smidigprosjekt
             app.UseDefaultFiles();
             //Use static files in wwwroot
             app.UseStaticFiles();
-
+            //app.UseFileServer();
 
 
             //do not use app.UseHttpsRedirection() -> We need to authorize using proxy during development
@@ -145,19 +155,24 @@ namespace smidigprosjekt
                 routes.MapDotNetifyHub();
             });
 
-            app.UseDotNetify();
+            app.UseDotNetify(config =>
+            {
+                config.UseFilter<AuthorizeFilter>();
+                // Middleware to do authenticate token in incoming request headers.
+                config.UseJwtBearerAuthentication(new TokenValidationParameters
+                {
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthServer.SecretKey)),
+                    ValidateIssuerSigningKey = true,
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.FromSeconds(0)
+                });
+                
+            });
 
             //Use MVC
             app.UseMvc();
-
-
-            // Optional: utilize webpack hot reload feature.
-            app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
-            {
-                HotModuleReplacement = true,
-                HotModuleReplacementClientOptions = new Dictionary<string, string> { { "reload", "true" } },
-            });
-
 
             //FirebaseDbConnection.initializeDB();
         }

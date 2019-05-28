@@ -1,5 +1,7 @@
 ﻿import React from 'react';
 import ReactDOM from 'react-dom';
-import SmidigProsjekt from './smidigprosjekt';
+import App from './routes';
+import 'flexboxgrid/css/flexboxgrid.css';
+import './styles/app.css';
 
-ReactDOM.render(<SmidigProsjekt />, document.getElementById('App'));
+ReactDOM.render(<App />, document.getElementById('App'));

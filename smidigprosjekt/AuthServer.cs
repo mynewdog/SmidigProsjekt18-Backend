@@ -36,97 +36,114 @@ namespace smidigprosjekt
         /// Secret key for openId Connect authorization
         /// </summary>
         public static string Client_id => "tjommisdemo2018_signing_key_that_should_be_very_long";
+
+        public static string SecretKey = "the_perfect_secret_string_10001HEXFFFFFF";
+
         /// <summary>
         /// Inject openid authentication protocol for aspnet core
         /// </summary>
         /// <param name="services">the service collection to add openid connect server to</param>
         public static void AddAuthenticationServer(this IServiceCollection services)
         {
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Client_id));
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(SecretKey));
             services.AddAuthentication()
-              .AddCookie(options => options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None)
-              .AddOpenIdConnectServer(options =>
+            .AddCookie(options => options.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None)
+            .AddOpenIdConnectServer(options =>
+            {
+                options.AccessTokenHandler = new JwtSecurityTokenHandler();
+                options.SigningCredentials.AddKey(signingKey);
+
+                options.AllowInsecureHttp = true;
+                options.TokenEndpointPath = "/token";
+
+                // On Login from Client
+                options.Provider.OnValidateTokenRequest = context =>
                 {
-                    options.AccessTokenHandler = new JwtSecurityTokenHandler();
-                    options.SigningCredentials.AddKey(signingKey);
 
-                    options.AllowInsecureHttp = true;
-                    options.TokenEndpointPath = "/token";
-
-                    // On Login from Client
-                    options.Provider.OnValidateTokenRequest = context =>
+                    // Check Client ID before we continue, should match
+                    if (string.Equals(context.ClientId, Client_id, StringComparison.Ordinal))
                     {
-                        // Check Client ID before we continue, should match
-                        if (string.Equals(context.ClientId, Client_id, StringComparison.Ordinal))
+                        if (validateUser(context))
                         {
-                            if (validateUser(context))
-                            {
-                                context.Validate();
-                            }
-                            else
-                            {
-                                context.Reject("Wrong username/password");
-                            }
+                            context.Validate();
+                            return Task.CompletedTask;
+                        }
+                        else
+                        {
+                            context.Reject(
+                                error: OpenIdConnectConstants.Errors.InvalidGrant,
+                                description: "Invalid user credentials.");
+                            return Task.CompletedTask;
+                        }
+                    }
+
+                    return Task.CompletedTask;
+
+                };
+
+                /*
+                 * If you wanna add extra parameters to the response
+                 * stream, you can do this here, this can be useful if we want
+                 * to add userinfo (profilesettings/etc, before websocket is initiated)
+                 * */
+                options.Provider.OnApplyTokenResponse = response =>
+                {
+                    /*
+                    if (response.Error == null) { 
+                      response.Response.AddParameter("", extra unencrypted parameters);
+                      response.Response.AddParameter("", extra unencrypted parameters);
+                    }*/
+                    return Task.CompletedTask;
+                };
+
+                /*
+                 * TODO
+                 * This is where we handle the tokenrequest,
+                 * missing work is connecting this to the CosmoDB server
+                 * and verify username and passwords
+                 */
+                options.Provider.OnHandleTokenRequest = context =>
+                {
+
+                    if (context.Request.IsPasswordGrantType())
+                    {
+                        var identity = new ClaimsIdentity(context.Scheme.Name,
+                          OpenIdConnectConstants.Claims.Name,
+                          OpenIdConnectConstants.Claims.Role);
+
+                        if (context.Request.Username.Contains("pog"))
+                        {
+                            identity.AddClaim(OpenIdConnectConstants.Claims.Role, "Admin",
+                            OpenIdConnectConstants.Destinations.AccessToken,
+                            OpenIdConnectConstants.Destinations.IdentityToken);
                         }
 
-                        return Task.CompletedTask;
-                    };
+                        identity.AddClaim(OpenIdConnectConstants.Claims.Name, context.Request.Username);
+                        identity.AddClaim(OpenIdConnectConstants.Claims.Subject, context.Request.Username);
 
-                    /*
-                     * If you wanna add extra parameters to the response
-                     * stream, you can do this here, this can be useful if we want
-                     * to add userinfo (profilesettings/etc, before websocket is initiated)
-                     * */
-                    options.Provider.OnApplyTokenResponse = response =>
-              {
-                  /*
-                  if (response.Error == null) { 
-                    response.Response.AddParameter("", extra unencrypted parameters);
-                    response.Response.AddParameter("", extra unencrypted parameters);
-                  }*/
-                  return Task.CompletedTask;
-              };
+                        identity.AddClaim(ClaimTypes.Name, context.Request.Username,
+                    OpenIdConnectConstants.Destinations.AccessToken,
+                    OpenIdConnectConstants.Destinations.IdentityToken);
+                        ;
 
-                    /*
-                     * TODO
-                     * This is where we handle the tokenrequest,
-                     * missing work is connecting this to the CosmoDB server
-                     * and verify username and passwords
-                     */
-                    options.Provider.OnHandleTokenRequest = context =>
-              {
-                  if (context.Request.IsPasswordGrantType())
-                  {
-                      var identity = new ClaimsIdentity(context.Scheme.Name,
-                OpenIdConnectConstants.Claims.Name,
-                OpenIdConnectConstants.Claims.Role);
+                        /* If we want, we can add properties to go with authenticationpacket 
+                         * late in process by adding props, and injecting it later in ApplyTokenResponse
+                         */
+                        //var props = new AuthenticationProperties(new Dictionary<string, string>
+                        //{});
 
-                      identity.AddClaim(OpenIdConnectConstants.Claims.Name, context.Request.Username);
-                      identity.AddClaim(OpenIdConnectConstants.Claims.Subject, context.Request.Username);
+                        var ticket = new AuthenticationTicket(
+                            new ClaimsPrincipal(identity),
+                            new AuthenticationProperties(),
+                            context.Scheme.Name);
 
-                      identity.AddClaim(ClaimTypes.Name, context.Request.Username,
-                  OpenIdConnectConstants.Destinations.AccessToken,
-                  OpenIdConnectConstants.Destinations.IdentityToken);
-                      ;
+                        ticket.SetScopes(
+                    OpenIdConnectConstants.Scopes.Profile,
+                    OpenIdConnectConstants.Scopes.OfflineAccess);
 
-                      /* If we want, we can add properties to go with authenticationpacket 
-                       * late in process by adding props, and injecting it later in ApplyTokenResponse
-                       */
-                      //var props = new AuthenticationProperties(new Dictionary<string, string>
-                      //{});
-
-                      var ticket = new AuthenticationTicket(
-                              new ClaimsPrincipal(identity),
-                              new AuthenticationProperties(),
-                              context.Scheme.Name);
-
-                      ticket.SetScopes(
-                  OpenIdConnectConstants.Scopes.Profile,
-                  OpenIdConnectConstants.Scopes.OfflineAccess);
-
-                      context.Validate(ticket);
-                  }
-                  return Task.CompletedTask;
+                        context.Validate(ticket);
+                    }
+                    return Task.CompletedTask;
                 };
             });
         }

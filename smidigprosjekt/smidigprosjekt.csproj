@@ -5,11 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="src\views\InterestPage.js" />
+    <None Remove="src\views\StartPage.js" />
     <None Remove="webpack.config.js" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="src\smidigprosjekt.js" />
+    <Content Include="src\views\InterestPage.js" />
+    <Content Include="src\views\StartPage.js" />
+    <Content Include="src\views\App.js" />
     <Content Include="webpack.config.js" />
   </ItemGroup>
 

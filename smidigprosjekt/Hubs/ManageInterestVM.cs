@@ -11,7 +11,7 @@ namespace smidigprosjekt.Hubs
 {
     //[Authorize(Role="Admin")]
     [Authorize]
-    public class FrontEndManagementVM : BaseVM
+    public class ManageInterestVM : MulticastVM
     {
         private IUserService _userService;
         private ILobbyService _lobbyService;
@@ -22,7 +22,7 @@ namespace smidigprosjekt.Hubs
         public int TotalLobbies => _lobbyService.Count();
 
 
-        public FrontEndManagementVM(IUserService userService, ILobbyService lobbyService)
+        public ManageInterestVM(IUserService userService, ILobbyService lobbyService)
         {
             _userService = userService;
             _lobbyService = lobbyService;
