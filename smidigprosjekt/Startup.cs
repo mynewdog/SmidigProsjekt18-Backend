@@ -16,6 +16,7 @@ using smidigprosjekt.Models;
 using smidigprosjekt.Logic.Database;
 using Microsoft.Extensions.Logging;
 using DotNetify;
+using Microsoft.AspNetCore.SpaServices.Webpack;
 
 namespace smidigprosjekt
 {
@@ -146,9 +147,17 @@ namespace smidigprosjekt
 
             app.UseDotNetify();
 
-
             //Use MVC
             app.UseMvc();
+
+
+            // Optional: utilize webpack hot reload feature.
+            app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+            {
+                HotModuleReplacement = true,
+                HotModuleReplacementClientOptions = new Dictionary<string, string> { { "reload", "true" } },
+            });
+
 
             //FirebaseDbConnection.initializeDB();
         }
