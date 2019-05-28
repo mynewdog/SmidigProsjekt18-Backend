@@ -48,7 +48,7 @@ namespace smidigprosjekt.Logic.Services
         // Active rooms save to Firebase
         public void Add(Lobby lobby)
         {
-            Task.Run(() => FirebaseDbConnection.addRoom(Lobbies));
+            Task.Run(() => FirebaseDbConnection.addRoom(lobby));
         }
         public void Delete(Lobby lobby)
         {

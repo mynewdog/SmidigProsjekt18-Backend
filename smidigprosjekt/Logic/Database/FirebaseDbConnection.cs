@@ -93,10 +93,11 @@ namespace smidigprosjekt.Logic.Database
             return list;
         }
 
-        public static async Task addRoom(IList<Lobby> rooms)
+        public static async Task addRoom(Lobby room)
         {
             var client = GetClient();
-            await client.Child("ActiveRooms").PostAsync(rooms);
+            var ret = await client.Child("ActiveRooms").PostAsync(room);
+            room.Key = ret.Key;
         }
         public static async Task removeRoom(Lobby r)
         {
