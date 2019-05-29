@@ -186,7 +186,7 @@ namespace smidigprosjekt.Logic.Services
 
         public User GetUserConfiguration(string userName)
         {
-            return _userAccessList.Where(e => e.Username.Contains(userName,StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            return _userAccessList.Where(e => e.Username.Contains(userName,StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
         }
 
         public async Task<bool> UpdateUser(User user)
