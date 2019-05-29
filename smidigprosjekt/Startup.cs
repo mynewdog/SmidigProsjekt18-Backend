@@ -55,7 +55,7 @@ namespace smidigprosjekt
           //Add token valdiation parameters(use AuthServer.client_id) for verification
           config.TokenValidationParameters = new TokenValidationParameters
                 {
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthServer.Client_id)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthServer.SecretKey)),
                     ValidateIssuerSigningKey = true,
                     ValidateAudience = false,
                     ValidateIssuer = false,
@@ -71,20 +71,20 @@ namespace smidigprosjekt
           config.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
-              {
-                    var accessToken = context.Request.Query["access_token"];
-              // If the request is for our hub...
-              var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) &&
-                  (path.StartsWithSegments("/tjommisHub")))
-                    {
-                  // Read the token out of the query string
-                  context.Token = accessToken;
+                  {
+                        var accessToken = context.Request.Query["access_token"];
+                  // If the request is for our hub...
+                  var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                      (path.StartsWithSegments("/tjommisHub")))
+                        {
+                      // Read the token out of the query string
+                      context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
                     }
-                    return Task.CompletedTask;
-                }
-                };
-            });
+                    };
+                });
 
             //Add cross origin policy so Ionic can connect
             services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin()
