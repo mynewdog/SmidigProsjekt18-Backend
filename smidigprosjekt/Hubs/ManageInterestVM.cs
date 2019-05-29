@@ -1,9 +1,11 @@
 ﻿using DotNetify;
 using DotNetify.Security;
 using smidigprosjekt.Logic.Services;
+using smidigprosjekt.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,8 +20,7 @@ namespace smidigprosjekt.Hubs
         private Timer _timer;
         public string Greetings => "Welcome to tjommis management";
         public DateTime ServerTime => DateTime.Now;
-        public int TotalUsers => _userService.Count();
-        public int TotalLobbies => _lobbyService.Count();
+        public IList<InterestItem> Interests => _userService.Interests;
 
 
         public ManageInterestVM(IUserService userService, ILobbyService lobbyService)
@@ -29,13 +30,15 @@ namespace smidigprosjekt.Hubs
             _timer = new Timer(state =>
             {
                 Changed(nameof(ServerTime));
-                Changed(nameof(TotalUsers));
-                Changed(nameof(TotalLobbies));
                 PushUpdates();
             }, null, 0, 1000);
         }
 
-        public override void Dispose() => _timer.Dispose();
+        public override void Dispose()
+        {
+            _timer.Dispose();
+            base.Dispose();
+        }
     }
 }
 

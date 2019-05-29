@@ -35,7 +35,11 @@ namespace smidigprosjekt.Hubs
             }, null, 0, 1000);
         }
 
-        public override void Dispose() => _timer.Dispose();
+        public override void Dispose()
+        {
+            _timer.Dispose();
+            base.Dispose();
+        }
     }
 }
 

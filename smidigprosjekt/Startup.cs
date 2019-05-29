@@ -18,6 +18,8 @@ using Microsoft.Extensions.Logging;
 using DotNetify;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using DotNetify.Security;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace smidigprosjekt
 {
@@ -173,7 +175,22 @@ namespace smidigprosjekt
 
             //Use MVC
             app.UseMvc();
+            
+            app.Run(async (context) =>
+            {
+                var uri = context.Request.Path.ToUriComponent();
+                if (uri.EndsWith(".map"))
+                    return;
+                else if (uri.EndsWith("_hmr"))  // Fix HMR for deep links.
+                    context.Response.Redirect("/dist/__webpack_hmr");
 
+                if (!uri.Contains('.'))
+                {
+                    using (var reader = new StreamReader(File.OpenRead("wwwroot/index.html")))
+                        await context.Response.WriteAsync(reader.ReadToEnd());
+                }
+            });
+            
             //FirebaseDbConnection.initializeDB();
         }
     }

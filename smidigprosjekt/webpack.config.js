@@ -13,6 +13,7 @@ module.exports = {
         modules: ['src', 'node_modules'],
         extensions: ['.js', '.jsx', '.tsx']
     },
+    devtool: 'source-map',
     module: {
         rules: [{ test: /\.jsx?$/, use: 'babel-loader', exclude: /node_modules/ },
         { test: /\.tsx?$/, use: 'awesome-typescript-loader?silent=true' },

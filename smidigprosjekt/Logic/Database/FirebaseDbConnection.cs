@@ -55,7 +55,19 @@ namespace smidigprosjekt.Logic.Database
                 await client.Child("Interests").PostAsync(e);
              });*/
         }
-        
+        public static async Task<InterestItem> AddInterest(InterestItem e)
+        {
+            var client = GetClient();
+            var ret = await client.Child("Interests").PostAsync(e);
+            ret.Object.Key = ret.Key;
+            return ret.Object;
+        }
+        public static async Task RemoveInterest(InterestItem e)
+        {
+            var client = GetClient();
+            await client.Child("Interests").Child(e.Key).DeleteAsync();
+        }
+
         private static async Task updateOrCreateUser(User user)
         {
             var client = GetClient();
@@ -99,6 +111,7 @@ namespace smidigprosjekt.Logic.Database
             var data = await client.Child("Interests").OnceAsync<InterestItem>();
             foreach (var item in data)
             {
+                item.Object.Key = item.Key;
                 list.Add(item.Object);
             }
             return list;

@@ -2,26 +2,150 @@
 import dotnetify from 'dotnetify';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
+import { MuiThemeProvider } from '@material-ui/core/styles';
+import FloatingActionButton from '@material-ui/core/Fab';
+import Snackbar from '@material-ui/core/Snackbar';
+import TextField from '@material-ui/core/TextField';
+//import { Table, TableBody, TableHeader, TableCell, TableRow, TableCell } from '@material-ui/core/Table';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHeader from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+
+import IconRemove from '@material-ui/icons/Remove';
+import ContentAdd from '@material-ui/icons/Add';
+import { pink500, grey200, grey500 } from '@material-ui/core/colors';
+import BasePage from '../components/BasePage';
+import Pagination from '../components/table/Pagination';
+import InlineEdit from '../components/table/InlineEdit';
+import ThemeDefault from '../styles/theme-default';
 
 const styles = theme => ({
 });
 class InterestPage extends React.Component {
     constructor(props) {
         super(props);
-        dotnetify.react.connect('ManageInterestVM', this);
-        //this.state = { Greetings: '', ServerTime: '' };
+        this.vm = dotnetify.react.connect('ManageInterestVM', this);
+        this.state = { Interests: [], addName: '', Pages: []};
+        /*
+         * From
+            public class InterestItem
+            {
+                public int Id { get; set; }
+                public string Key { get; set; }
+                public string Name { get; set; }
+                public string Category { get; set; }
+            }
+         * */
     }
 
     componentWillUnmount() {
         this.vm.$destroy();
     }
+
     render() {
+        let { Interests, addName, addCategory, Pages, SelectedPage, ShowNotification } = this.state;
+
+        const styles = {
+            addButton: { margin: '1em' },
+            removeIcon: { fill: grey500 },
+            columns: {
+                id: { width: '10%' },
+                firstName: { width: '35%' },
+                lastName: { width: '35%' },
+                remove: { width: '15%' }
+            },
+            pagination: { marginTop: '1em' }
+        };
+
+        const handleAdd = _ => {
+            if (addName) {
+                this.dispatch({ Add: addName });
+                this.setState({ addName: '' });
+            }
+        };
+
+        const handleUpdate = interest => {
+            let newState = Interests.map(item => (item.Id === interest.Id ? Object.assign(item, interest) : item));
+            this.setState({ Interests: newState });
+            this.dispatch({ Update: interest });
+        };
+
+        const handleSelectPage = page => {
+            const newState = { SelectedPage: page };
+            this.setState(newState);
+            this.dispatch(newState);
+        };
+
+        const hideNotification = _ => this.setState({ ShowNotification: false });
+
         return (
-            <div>
-                <h4>Interests</h4>
-            </div>
+            <MuiThemeProvider theme={ThemeDefault}>
+                <BasePage title="Table Page" navigation="Application / Table Page">
+                    <div>
+                        <div>
+
+                            <TextField
+                                id="AddCategory"
+                                label="Category"
+                                value={addCategory}
+                                onKeyPress={event => (event.key === 'Enter' ? handleAdd() : null)}
+                                onChange={event => this.setState({ addCategory: event.target.value })}
+                            />
+                            <TextField
+                                id="AddName"
+                                label="TagName"
+                                value={addName}
+                                onKeyPress={event => (event.key === 'Enter' ? handleAdd() : null)}
+                                onChange={event => this.setState({ addName: event.target.value })}
+                            />
+
+                            <FloatingActionButton onClick={handleAdd} style={styles.addButton} >
+                                <ContentAdd />
+                            </FloatingActionButton>
+                        </div>
+
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableCell style={styles.columns.id}>ID</TableCell>
+                                    <TableCell style={styles.columns.firstName}>Category</TableCell>
+                                    <TableCell style={styles.columns.lastName}>Tag</TableCell>
+                                    <TableCell style={styles.columns.remove}>Remove</TableCell>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Interests.map(item => (
+                                    <TableRow key={item.Id}>
+                                        <TableCell style={styles.columns.id}>{item.Id}</TableCell>
+                                        <TableCell style={styles.columns.firstName}>
+                                            <InlineEdit onChange={value => handleUpdate({ Id: item.Id, FirstName: value })}>{item.Category}</InlineEdit>
+                                        </TableCell>
+                                        <TableCell style={styles.columns.lastName}>
+                                            <InlineEdit onChange={value => handleUpdate({ Id: item.Id, LastName: value })}>{item.Name}</InlineEdit>
+                                        </TableCell>
+                                        <TableCell style={styles.columns.remove}>
+                                            <FloatingActionButton
+                                                onClick={_ => this.dispatch({ Remove: item.Id })}
+                                                color="primary"
+                                            >
+                                                <IconRemove />
+                                            </FloatingActionButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+
+                        <Pagination style={styles.pagination} pages={Pages} select={SelectedPage} onSelect={handleSelectPage} />
+
+                        <Snackbar open={ShowNotification} message="Changes saved" autoHideDuration={1000} onRequestClose={hideNotification} />
+                    </div>
+                </BasePage>
+            </MuiThemeProvider>
         );
-    }
+    };
 };
 
 export default withStyles(styles)(InterestPage);

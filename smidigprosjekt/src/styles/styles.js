@@ -1,11 +1,11 @@
-import { typography } from '@material-ui/core/styles';
-import { grey600 } from '@material-ui/core/colors';
+import typography from '@material-ui/core/Typography';
+import { grey } from '@material-ui/core/colors';
 
 const styles = {
     navigation: {
         fontSize: 15,
         fontWeight: typography.fontWeightLight,
-        color: grey600,
+        color: grey,
         paddingBottom: 15,
         display: 'block'
     },

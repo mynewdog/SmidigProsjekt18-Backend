@@ -1,6 +1,6 @@
 import React from 'react';
-import Paper from 'material-ui/Paper';
-import FlatButton from 'material-ui/FlatButton';
+import Paper from '@material-ui/core/Paper';
+import FlatButton from '@material-ui/core/Button';
 
 const Pagination = props => {
   const styles = {

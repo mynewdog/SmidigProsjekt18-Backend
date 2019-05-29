@@ -1,8 +1,8 @@
 import React from 'react';
-import FlatButton from 'material-ui/FlatButton';
-import EditIcon from 'material-ui/svg-icons/content/create';
-import TextField from 'material-ui/TextField';
-import { grey400 } from 'material-ui/styles/colors';
+import FlatButton from '@material-ui/core/Button';
+import EditIcon from '@material-ui/icons/Edit';
+import TextField from '@material-ui/core/TextField';
+import { grey400 } from '@material-ui/core/colors';
 
 class InlineEdit extends React.Component {
   constructor(props) {

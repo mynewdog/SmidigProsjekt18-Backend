@@ -20,7 +20,8 @@ namespace smidigprosjekt.Logic.Services
     public interface IUserService
     {
         IList<InterestItem> Interests { get; }
-
+        Task<InterestItem> AddInterest(string Category, string Tag);
+        Task RemoveInterest(InterestItem item);
         /// <summary>
         /// Gets all users
         /// </summary>
@@ -200,6 +201,18 @@ namespace smidigprosjekt.Logic.Services
                 return false;
             }
         }
+
+        public async Task<InterestItem> AddInterest(string Category, string Tag)
+        {
+            return await FirebaseDbConnection.AddInterest(new InterestItem() {Id = Interests.Count(), Category = Category, Name = Tag });
+        }
+
+        public async Task RemoveInterest(InterestItem item)
+        {
+            await FirebaseDbConnection.RemoveInterest(item);
+            Interests.Remove(item);
+        }
+        
     }
 
 }

@@ -8,7 +8,7 @@ const styles = theme => ({
 class Statistics extends React.Component {
     constructor(props) {
         super(props);
-        dotnetify.react.connect('FrontEndManagementVM', this);
+        this.vm = dotnetify.react.connect('FrontEndManagementVM', this);
         this.state = { Greetings: '', ServerTime: '' };
     }
 

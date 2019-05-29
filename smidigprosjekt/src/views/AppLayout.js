@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
-import dotnetify from 'dotnetify';;
+import dotnetify from 'dotnetify';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import ThemeDefault from '../styles/theme-default';
