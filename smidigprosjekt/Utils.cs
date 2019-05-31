@@ -14,7 +14,10 @@ namespace smidigprosjekt
             return new TjommisUser()
             {
                 Username = user.Username,
-                Lastname = user.LastName
+                Lastname = user.LastName,
+                Connected = user.Connected,
+                Studie = user.Studie,
+                Institutt = user.Institutt
             };
         }
         public static TjommisLobby ConvertToSanitizedLobby(this Lobby lobby)
@@ -32,6 +35,9 @@ namespace smidigprosjekt
     {
         public string Username { get; set; }
         public string Lastname { get; set; }
+        public bool Connected {get;set;}
+        public string Institutt { get;  set; }
+        public string Studie { get;  set; }
 
     }
 }
