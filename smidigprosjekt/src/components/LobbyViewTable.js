@@ -5,7 +5,13 @@ import { grey } from "@material-ui/core/colors";
 const styles = {
     addButton: { margin: '1em' },
     removeIcon: { fill: grey },
-    columns: {
+    lobbycolumns: {
+        lobbyname: { width: '40%', fontWeight: 'bold'},
+        joinable: { width: '25%', fontWeight: 'bold'},
+        members: { width:  '15%', fontWeight: 'bold'},
+        messages: { width: '15%', fontWeight: 'bold'}
+    },
+    usercolumns: {
         connected: { width: '25%' },
         username: { width: '25%' },
         studie: { width: '25%' },
@@ -14,27 +20,42 @@ const styles = {
     pagination: { marginTop: '1em' }
 };
 
-export const UserViewTable = props => { 
+export const LobbyViewTable = props => { 
         return (
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell style={styles.columns.connected}>Tilkoblet</TableCell>
-                        <TableCell style={styles.columns.username}>Brukernavn</TableCell>
-                        <TableCell style={styles.columns.studie}>Studie</TableCell>
-                        <TableCell style={styles.columns.institutt}>Institutt</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {props.users.map(item => {
-                        return <TableRow key={item.Username}>
-                            <TableCell style={styles.columns.connected}>{item.Connected ? "Yes" : "No"}</TableCell>
-                            <TableCell style={styles.columns.username}>{item.Username}</TableCell>
-                            <TableCell style={styles.columns.studie}>{item.Studie}</TableCell>
-                            <TableCell style={styles.columns.institutt}>{item.Institutt}</TableCell>
+
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell style={styles.lobbycolumns.joinable}>Open</TableCell>
+                    <TableCell style={styles.lobbycolumns.lobbyname}>Name</TableCell>
+                    <TableCell style={styles.lobbycolumns.members}>Members</TableCell>
+                    <TableCell style={styles.lobbycolumns.messages}>Messages</TableCell>
+                </TableRow>
+            </TableHead>
+                {props.lobbies.map((lobby,idx) => {
+                    return <TableBody key={idx}>
+                        <TableRow key={lobby.LobbyName}>
+                            <TableCell style={styles.lobbycolumns.joinable}>{lobby.Joinable ? "Yes" : "No"}</TableCell>
+                            <TableCell style={styles.lobbycolumns.lobbyname}>{lobby.LobbyName}</TableCell>
+                            <TableCell style={styles.lobbycolumns.members}>{lobby.Members.length}</TableCell>
+                            <TableCell style={styles.lobbycolumns.messages}>{lobby.Messages.length}</TableCell>
                         </TableRow>
-                        }
-                    )}
-                </TableBody>
-            </Table>)    
+                        <TableRow>
+                            <TableCell size="small" style={styles.usercolumns.connected}>Tilkoblet</TableCell>
+                            <TableCell size="small" style={styles.usercolumns.username}>Brukernavn</TableCell>
+                            <TableCell size="small" style={styles.usercolumns.studie}>Studie</TableCell>
+                            <TableCell size="small" style={styles.usercolumns.institutt}>Institutt</TableCell>
+                        </TableRow>
+                            {lobby.Members.map(item => {
+                                return <TableRow key={item.Username}>
+                                    <TableCell size="small" style={styles.usercolumns.connected}>{item.Connected ? "Yes" : "No"}</TableCell>
+                                    <TableCell size="small" style={styles.usercolumns.username}>{item.Username}</TableCell>
+                                    <TableCell size="small" style={styles.usercolumns.studie}>{item.Studie}</TableCell>
+                                    <TableCell size="small" style={styles.usercolumns.institutt}>{item.Institutt}</TableCell>
+                                </TableRow>
+                                }
+                            )}
+                        </TableBody>
+                })}
+        </Table>)
 }

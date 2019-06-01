@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { withStyles, MuiThemeProvider } from '@material-ui/core/styles';
 import ThemeDefault from '../styles/theme-default';
 import { UserViewTable } from '../components/UserViewTable';
+import { LobbyViewTable } from '../components/LobbyViewTable';
 
 const styles = theme => ({
 });
@@ -41,9 +42,11 @@ class Statistics extends React.Component {
                 <p>Total users awaiting lobby: {this.state.UsersInHangout.length}</p>
                 <p>Total users: {this.state.Users.length}</p>
             </div>
-            <p>Brukere i hangout</p>
+            <h4>Hangout Activity</h4>
             <UserViewTable users={this.state.UsersInHangout}/>
-            <p>Aktive brukere</p>
+            <h4>Lobbies</h4>
+            <LobbyViewTable lobbies={this.state.Lobbies}/>
+            <p>Aktive users</p>
             <UserViewTable users={this.state.Users}/>
             </MuiThemeProvider>
         );

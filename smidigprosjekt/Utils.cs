@@ -26,7 +26,7 @@ namespace smidigprosjekt
             {
                 Joinable = lobby.Joinable,
                 LobbyName = lobby.LobbyName,
-                Members = lobby.Members.Select(e => new TjommisUser() { Lastname = e.LastName, Username = e.Username }),
+                Members = lobby.Members.Select(e => e.ConvertToSanitizedUser()),
                 Messages = lobby.Messages
             };
         }
