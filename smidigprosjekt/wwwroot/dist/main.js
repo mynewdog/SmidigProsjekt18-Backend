@@ -63,7 +63,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "2ecb25d45bb0be46472c";
+/******/ 	var hotCurrentHash = "a80fe209fca6db86b136";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -59440,6 +59440,9 @@ var InterestPage = function (_React$Component) {
 
         _this.vm = _dotnetify2.default.react.connect('ManageInterestVM', _this);
         _this.state = { Interests: [], addName: '', Pages: [] };
+        _this.dispatch = function (state) {
+            return _this.vm.$dispatch(state);
+        };
         /*
          * From
             public class InterestItem
@@ -59476,24 +59479,24 @@ var InterestPage = function (_React$Component) {
                 addButton: { margin: '1em' },
                 removeIcon: { fill: _colors.grey500 },
                 columns: {
-                    id: { width: '10%' },
-                    firstName: { width: '35%' },
-                    lastName: { width: '35%' },
-                    remove: { width: '15%' }
+                    category: { width: '40%' },
+                    tag: { width: '40%' },
+                    remove: { width: '20%' }
                 },
                 pagination: { marginTop: '1em' }
             };
 
             var handleAdd = function handleAdd(_) {
                 if (addName) {
-                    _this2.dispatch({ Add: addName });
-                    _this2.setState({ addName: '' });
+                    console.log("adding");
+                    _this2.dispatch({ Add: { Name: addName, Category: addCategory } });
+                    _this2.setState({ addName: '', addCategory: '' });
                 }
             };
 
             var handleUpdate = function handleUpdate(interest) {
                 var newState = Interests.map(function (item) {
-                    return item.Id === interest.Id ? Object.assign(item, interest) : item;
+                    return item.Key === interest.Key ? Object.assign(item, interest) : item;
                 });
                 _this2.setState({ Interests: newState });
                 _this2.dispatch({ Update: interest });
@@ -59514,7 +59517,7 @@ var InterestPage = function (_React$Component) {
                 { theme: _themeDefault2.default },
                 _react2.default.createElement(
                     _BasePage2.default,
-                    { title: 'Table Page', navigation: 'Application / Table Page' },
+                    { title: 'Interests', navigation: 'Application / Table Page' },
                     _react2.default.createElement(
                         'div',
                         null,
@@ -59545,7 +59548,7 @@ var InterestPage = function (_React$Component) {
                             }),
                             _react2.default.createElement(
                                 _Fab2.default,
-                                { onClick: handleAdd, style: styles.addButton },
+                                { onClick: handleAdd, style: styles.addButton, size: 'small' },
                                 _react2.default.createElement(_Add2.default, null)
                             )
                         ),
@@ -59560,17 +59563,12 @@ var InterestPage = function (_React$Component) {
                                     null,
                                     _react2.default.createElement(
                                         _TableCell2.default,
-                                        { style: styles.columns.id },
-                                        'ID'
-                                    ),
-                                    _react2.default.createElement(
-                                        _TableCell2.default,
-                                        { style: styles.columns.firstName },
+                                        { style: styles.columns.category },
                                         'Category'
                                     ),
                                     _react2.default.createElement(
                                         _TableCell2.default,
-                                        { style: styles.columns.lastName },
+                                        { style: styles.columns.tag },
                                         'Tag'
                                     ),
                                     _react2.default.createElement(
@@ -59589,27 +59587,22 @@ var InterestPage = function (_React$Component) {
                                         { key: item.Id },
                                         _react2.default.createElement(
                                             _TableCell2.default,
-                                            { style: styles.columns.id },
-                                            item.Id
-                                        ),
-                                        _react2.default.createElement(
-                                            _TableCell2.default,
-                                            { style: styles.columns.firstName },
+                                            { style: styles.columns.category },
                                             _react2.default.createElement(
                                                 _InlineEdit2.default,
                                                 { onChange: function onChange(value) {
-                                                        return handleUpdate({ Id: item.Id, FirstName: value });
+                                                        return handleUpdate({ Id: item.Key, FirstName: value });
                                                     } },
                                                 item.Category
                                             )
                                         ),
                                         _react2.default.createElement(
                                             _TableCell2.default,
-                                            { style: styles.columns.lastName },
+                                            { style: styles.columns.tag },
                                             _react2.default.createElement(
                                                 _InlineEdit2.default,
                                                 { onChange: function onChange(value) {
-                                                        return handleUpdate({ Id: item.Id, LastName: value });
+                                                        return handleUpdate({ Id: item.Key, LastName: value });
                                                     } },
                                                 item.Name
                                             )
@@ -59620,8 +59613,9 @@ var InterestPage = function (_React$Component) {
                                             _react2.default.createElement(
                                                 _Fab2.default,
                                                 {
+                                                    size: 'small',
                                                     onClick: function onClick(_) {
-                                                        return _this2.dispatch({ Remove: item.Id });
+                                                        return _this2.dispatch({ Delete: item.Key });
                                                     },
                                                     color: 'primary'
                                                 },

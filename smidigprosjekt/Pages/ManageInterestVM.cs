@@ -15,16 +15,18 @@ namespace smidigprosjekt.Hubs
     [Authorize]
     public class ManageInterestVM : MulticastVM
     {
+        private IInterestProviderService _interestService;
         private IUserService _userService;
         private ILobbyService _lobbyService;
         private Timer _timer;
         public string Greetings => "Welcome to tjommis management";
         public DateTime ServerTime => DateTime.Now;
-        public IList<InterestItem> Interests => _userService.Interests;
+        public IList<InterestItem> Interests => _interestService.GetAll();
 
-
-        public ManageInterestVM(IUserService userService, ILobbyService lobbyService)
+        public ManageInterestVM(IUserService userService,
+            ILobbyService lobbyService, IInterestProviderService interestProviderService)
         {
+            _interestService = interestProviderService;
             _userService = userService;
             _lobbyService = lobbyService;
             _timer = new Timer(state =>
@@ -33,6 +35,21 @@ namespace smidigprosjekt.Hubs
                 PushUpdates();
             }, null, 0, 1000);
         }
+        public Action<InterestItem> Add => async interest =>
+        {
+            var result = await _interestService.Add(interest.Category,interest.Name);
+            Console.WriteLine("Added interest {0}, key: {1}", interest.Name,result.Key);
+            Changed(nameof(Interests));
+            PushUpdates();
+        };
+        public Action<string> Delete => async index =>
+        {
+            Console.WriteLine("Deleting interest {0}", index);
+            await _interestService.Remove(_interestService.GetAll().First(e => e.Key.Contains(index)));
+            Changed(nameof(Interests));
+            PushUpdates();
+        };
+
 
         public override void Dispose()
         {

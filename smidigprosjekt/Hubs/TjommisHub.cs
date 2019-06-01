@@ -15,11 +15,13 @@ namespace smidigprosjekt.Hubs
     [Authorize]
     public class TjommisHub : Hub
     {
+        private IInterestProviderService _interestProvider;
         private IUserService _userService;
         private ILobbyService _lobbyService;
 
-        public TjommisHub(IUserService userService, ILobbyService lobbyService)
+        public TjommisHub(IUserService userService, ILobbyService lobbyService, IInterestProviderService interestProvider)
         {
+            _interestProvider = interestProvider;
             _userService = userService;
             _lobbyService = lobbyService;
         }
@@ -69,7 +71,7 @@ namespace smidigprosjekt.Hubs
                         Interests = user.Configuration.Interests,
                         Lobbies = user.Lobbies.Select(e=> e.ConvertToSanitizedLobby())
                     },
-                    InterestList = _userService.Interests,
+                    InterestList = _interestProvider.GetAll(),
                 };
                 
             }
@@ -118,7 +120,7 @@ namespace smidigprosjekt.Hubs
                     Interests = user.Configuration?.Interests,
                     Lobbies = user.Lobbies.Select(e => e.ConvertToSanitizedLobby())
                 },
-                InterestList = _userService.Interests,
+                InterestList = _interestProvider.GetAll(),
             };
             await Clients.Caller.SendAsync("infoConnectEvent", connectionEvent);
             
