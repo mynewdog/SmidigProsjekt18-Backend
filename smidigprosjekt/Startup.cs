@@ -52,8 +52,8 @@ namespace smidigprosjekt
             })
             .AddJwtBearer(config =>
             {
-          //Add token valdiation parameters(use AuthServer.client_id) for verification
-          config.TokenValidationParameters = new TokenValidationParameters
+                //Add token valdiation parameters(use AuthServer.client_id) for verification
+                config.TokenValidationParameters = new TokenValidationParameters
                 {
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthServer.SecretKey)),
                     ValidateIssuerSigningKey = true,

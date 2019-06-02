@@ -126,11 +126,11 @@ namespace smidigprosjekt.Hubs
             
             _userService.ConnectUser(user, Clients.Caller);
 
-            await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
-            await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
+//            await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
+//            await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
+
 
         }
-
         /// <summary>
         /// Called when a connection with the hub is terminated.
         /// </summary>
