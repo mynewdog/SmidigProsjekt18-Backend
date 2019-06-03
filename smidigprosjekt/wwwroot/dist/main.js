@@ -63,7 +63,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "290760f97b5cb404b85b";
+/******/ 	var hotCurrentHash = "18dc75a3b4122da9c70c";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -77442,6 +77442,166 @@ exports.default = (0, _styles.withStyles)(styles)(Header);
 
 /***/ }),
 
+/***/ "./src/components/LobbyViewTable.js":
+/*!******************************************!*\
+  !*** ./src/components/LobbyViewTable.js ***!
+  \******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.LobbyViewTable = undefined;
+
+var _react = __webpack_require__(/*! react */ "./node_modules/react/index.js");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _core = __webpack_require__(/*! @material-ui/core */ "./node_modules/@material-ui/core/index.es.js");
+
+var _colors = __webpack_require__(/*! @material-ui/core/colors */ "./node_modules/@material-ui/core/colors/index.js");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var styles = {
+    addButton: { margin: '1em' },
+    removeIcon: { fill: _colors.grey },
+    lobbycolumns: {
+        lobbyname: { width: '40%', fontWeight: 'bold' },
+        joinable: { width: '25%', fontWeight: 'bold' },
+        members: { width: '15%', fontWeight: 'bold' },
+        messages: { width: '15%', fontWeight: 'bold' }
+    },
+    usercolumns: {
+        connected: { width: '25%' },
+        username: { width: '25%' },
+        studie: { width: '25%' },
+        intitutt: { width: '25%' }
+    },
+    pagination: { marginTop: '1em' }
+};
+
+var LobbyViewTable = exports.LobbyViewTable = function LobbyViewTable(props) {
+    return _react2.default.createElement(
+        _core.Table,
+        null,
+        _react2.default.createElement(
+            _core.TableHead,
+            null,
+            _react2.default.createElement(
+                _core.TableRow,
+                null,
+                _react2.default.createElement(
+                    _core.TableCell,
+                    { style: styles.lobbycolumns.joinable },
+                    "Open"
+                ),
+                _react2.default.createElement(
+                    _core.TableCell,
+                    { style: styles.lobbycolumns.lobbyname },
+                    "Name"
+                ),
+                _react2.default.createElement(
+                    _core.TableCell,
+                    { style: styles.lobbycolumns.members },
+                    "Members"
+                ),
+                _react2.default.createElement(
+                    _core.TableCell,
+                    { style: styles.lobbycolumns.messages },
+                    "Messages"
+                )
+            )
+        ),
+        props.lobbies.map(function (lobby, idx) {
+            return _react2.default.createElement(
+                _core.TableBody,
+                { key: idx },
+                _react2.default.createElement(
+                    _core.TableRow,
+                    { key: lobby.LobbyName },
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { style: styles.lobbycolumns.joinable },
+                        lobby.Joinable ? "Yes" : "No"
+                    ),
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { style: styles.lobbycolumns.lobbyname },
+                        lobby.LobbyName
+                    ),
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { style: styles.lobbycolumns.members },
+                        lobby.Members.length
+                    ),
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { style: styles.lobbycolumns.messages },
+                        lobby.Messages.length
+                    )
+                ),
+                _react2.default.createElement(
+                    _core.TableRow,
+                    null,
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { size: "small", style: styles.usercolumns.connected },
+                        "Tilkoblet"
+                    ),
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { size: "small", style: styles.usercolumns.username },
+                        "Brukernavn"
+                    ),
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { size: "small", style: styles.usercolumns.studie },
+                        "Studie"
+                    ),
+                    _react2.default.createElement(
+                        _core.TableCell,
+                        { size: "small", style: styles.usercolumns.institutt },
+                        "Institutt"
+                    )
+                ),
+                lobby.Members.map(function (item) {
+                    return _react2.default.createElement(
+                        _core.TableRow,
+                        { key: item.Username },
+                        _react2.default.createElement(
+                            _core.TableCell,
+                            { size: "small", style: styles.usercolumns.connected },
+                            item.Connected ? "Yes" : "No"
+                        ),
+                        _react2.default.createElement(
+                            _core.TableCell,
+                            { size: "small", style: styles.usercolumns.username },
+                            item.Username
+                        ),
+                        _react2.default.createElement(
+                            _core.TableCell,
+                            { size: "small", style: styles.usercolumns.studie },
+                            item.Studie
+                        ),
+                        _react2.default.createElement(
+                            _core.TableCell,
+                            { size: "small", style: styles.usercolumns.institutt },
+                            item.Institutt
+                        )
+                    );
+                })
+            );
+        })
+    );
+};
+
+/***/ }),
+
 /***/ "./src/components/Sidebar.js":
 /*!***********************************!*\
   !*** ./src/components/Sidebar.js ***!
@@ -78351,6 +78511,9 @@ var InterestPage = function (_React$Component) {
 
         _this.vm = _dotnetify2.default.react.connect('ManageInterestVM', _this);
         _this.state = { Interests: [], addName: '', Pages: [] };
+        _this.dispatch = function (state) {
+            return _this.vm.$dispatch(state);
+        };
         /*
          * From
             public class InterestItem
@@ -78387,24 +78550,24 @@ var InterestPage = function (_React$Component) {
                 addButton: { margin: '1em' },
                 removeIcon: { fill: _colors.grey500 },
                 columns: {
-                    id: { width: '10%' },
-                    firstName: { width: '35%' },
-                    lastName: { width: '35%' },
-                    remove: { width: '15%' }
+                    category: { width: '40%' },
+                    tag: { width: '40%' },
+                    remove: { width: '20%' }
                 },
                 pagination: { marginTop: '1em' }
             };
 
             var handleAdd = function handleAdd(_) {
                 if (addName) {
-                    _this2.dispatch({ Add: addName });
-                    _this2.setState({ addName: '' });
+                    console.log("adding");
+                    _this2.dispatch({ Add: { Name: addName, Category: addCategory } });
+                    _this2.setState({ addName: '', addCategory: '' });
                 }
             };
 
             var handleUpdate = function handleUpdate(interest) {
                 var newState = Interests.map(function (item) {
-                    return item.Id === interest.Id ? Object.assign(item, interest) : item;
+                    return item.Key === interest.Key ? Object.assign(item, interest) : item;
                 });
                 _this2.setState({ Interests: newState });
                 _this2.dispatch({ Update: interest });
@@ -78425,7 +78588,7 @@ var InterestPage = function (_React$Component) {
                 { theme: _themeDefault2.default },
                 _react2.default.createElement(
                     _BasePage2.default,
-                    { title: 'Table Page', navigation: 'Application / Table Page' },
+                    { title: 'Interests', navigation: 'Application / Table Page' },
                     _react2.default.createElement(
                         'div',
                         null,
@@ -78456,7 +78619,7 @@ var InterestPage = function (_React$Component) {
                             }),
                             _react2.default.createElement(
                                 _Fab2.default,
-                                { onClick: handleAdd, style: styles.addButton },
+                                { onClick: handleAdd, style: styles.addButton, size: 'small' },
                                 _react2.default.createElement(_Add2.default, null)
                             )
                         ),
@@ -78471,17 +78634,12 @@ var InterestPage = function (_React$Component) {
                                     null,
                                     _react2.default.createElement(
                                         _TableCell2.default,
-                                        { style: styles.columns.id },
-                                        'ID'
-                                    ),
-                                    _react2.default.createElement(
-                                        _TableCell2.default,
-                                        { style: styles.columns.firstName },
+                                        { style: styles.columns.category },
                                         'Category'
                                     ),
                                     _react2.default.createElement(
                                         _TableCell2.default,
-                                        { style: styles.columns.lastName },
+                                        { style: styles.columns.tag },
                                         'Tag'
                                     ),
                                     _react2.default.createElement(
@@ -78500,27 +78658,22 @@ var InterestPage = function (_React$Component) {
                                         { key: item.Id },
                                         _react2.default.createElement(
                                             _TableCell2.default,
-                                            { style: styles.columns.id },
-                                            item.Id
-                                        ),
-                                        _react2.default.createElement(
-                                            _TableCell2.default,
-                                            { style: styles.columns.firstName },
+                                            { style: styles.columns.category },
                                             _react2.default.createElement(
                                                 _InlineEdit2.default,
                                                 { onChange: function onChange(value) {
-                                                        return handleUpdate({ Id: item.Id, FirstName: value });
+                                                        return handleUpdate({ Id: item.Key, FirstName: value });
                                                     } },
                                                 item.Category
                                             )
                                         ),
                                         _react2.default.createElement(
                                             _TableCell2.default,
-                                            { style: styles.columns.lastName },
+                                            { style: styles.columns.tag },
                                             _react2.default.createElement(
                                                 _InlineEdit2.default,
                                                 { onChange: function onChange(value) {
-                                                        return handleUpdate({ Id: item.Id, LastName: value });
+                                                        return handleUpdate({ Id: item.Key, LastName: value });
                                                     } },
                                                 item.Name
                                             )
@@ -78531,8 +78684,9 @@ var InterestPage = function (_React$Component) {
                                             _react2.default.createElement(
                                                 _Fab2.default,
                                                 {
+                                                    size: 'small',
                                                     onClick: function onClick(_) {
-                                                        return _this2.dispatch({ Remove: item.Id });
+                                                        return _this2.dispatch({ Delete: item.Key });
                                                     },
                                                     color: 'primary'
                                                 },
@@ -78933,6 +79087,8 @@ var _themeDefault2 = _interopRequireDefault(_themeDefault);
 
 var _UserViewTable = __webpack_require__(/*! ../components/UserViewTable */ "./src/components/UserViewTable.js");
 
+var _LobbyViewTable = __webpack_require__(/*! ../components/LobbyViewTable */ "./src/components/LobbyViewTable.js");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -78963,6 +79119,7 @@ var Statistics = function (_React$Component) {
             JoinableLobbies: 0,
             UsersInHangout: [],
             Lobbies: [],
+            TempLobbies: [],
             Users: []
         };
         return _this;
@@ -79030,15 +79187,27 @@ var Statistics = function (_React$Component) {
                     )
                 ),
                 _react2.default.createElement(
-                    'p',
+                    'h4',
                     null,
-                    'Brukere i hangout'
+                    'Hangout Activity'
                 ),
                 _react2.default.createElement(_UserViewTable.UserViewTable, { users: this.state.UsersInHangout }),
                 _react2.default.createElement(
+                    'h4',
+                    null,
+                    'Temporary lobbies'
+                ),
+                _react2.default.createElement(_LobbyViewTable.LobbyViewTable, { lobbies: this.state.TempLobbies }),
+                _react2.default.createElement(
+                    'h4',
+                    null,
+                    'Lobbies'
+                ),
+                _react2.default.createElement(_LobbyViewTable.LobbyViewTable, { lobbies: this.state.Lobbies }),
+                _react2.default.createElement(
                     'p',
                     null,
-                    'Aktive brukere'
+                    'Aktive users'
                 ),
                 _react2.default.createElement(_UserViewTable.UserViewTable, { users: this.state.Users })
             );

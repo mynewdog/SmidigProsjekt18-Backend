@@ -21,6 +21,7 @@ class Statistics extends React.Component {
             JoinableLobbies: 0,
             UsersInHangout: [],
             Lobbies: [],
+            TempLobbies: [],
             Users: []
          };
     }
@@ -43,7 +44,9 @@ class Statistics extends React.Component {
                 <p>Total users: {this.state.Users.length}</p>
             </div>
             <h4>Hangout Activity</h4>
-            <UserViewTable users={this.state.UsersInHangout}/>
+            <UserViewTable users={this.state.UsersInHangout} />
+            <h4>Temporary lobbies</h4>
+            <LobbyViewTable lobbies={this.state.TempLobbies} />
             <h4>Lobbies</h4>
             <LobbyViewTable lobbies={this.state.Lobbies}/>
             <p>Aktive users</p>

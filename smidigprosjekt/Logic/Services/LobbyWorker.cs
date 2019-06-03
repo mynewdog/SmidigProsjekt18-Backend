@@ -151,6 +151,7 @@ Total Lobbies:      {2}     Total users in temp lobbies:   {3}
                     //Send lobbyinfo to the new user about the
                     //add curent user to the lobby
                     temp.Members.Add(userSession.user);
+                    if (temp.Members.Count >= temp.MaxUsers) temp.Joinable = false;
                     //current status of the temporary lobby
                     userSession.proxy.SendAsync("lobbyinfo", temp.ConvertToSanitizedLobby());
                     //Add user to SignalR group

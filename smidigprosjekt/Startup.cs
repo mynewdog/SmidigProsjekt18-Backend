@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.SpaServices.Webpack;
 using DotNetify.Security;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 
 namespace smidigprosjekt
 {
@@ -181,9 +182,8 @@ namespace smidigprosjekt
                 var uri = context.Request.Path.ToUriComponent();
                 if (uri.EndsWith(".map"))
                     return;
-                else if (uri.EndsWith("_hmr"))  // Fix HMR for deep links.
-                    context.Response.Redirect("/dist/__webpack_hmr");
-
+                else if (uri.EndsWith("_hmr") || uri.Contains("hot-update"))  // Fix HMR for deep links.
+                    context.Response.Redirect(Regex.Replace(uri, ".+/dist", "/dist"));
                 if (!uri.Contains('.'))
                 {
                     using (var reader = new StreamReader(File.OpenRead("wwwroot/index.html")))

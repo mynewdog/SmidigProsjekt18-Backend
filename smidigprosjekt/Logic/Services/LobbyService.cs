@@ -61,17 +61,19 @@ namespace smidigprosjekt.Logic.Services
         /// <param name="lobby"></param>
         public void SendRoom(Lobby lobby)// add parameter of composistion tags
         {
-            if (lobby.MaxUsers == lobby.Members.Count) // Room reach max size
+            if (lobby.Members.Count >= lobby.MaxUsers) // Room reach max size
             {
                 _logger.LogInformation("Lobby full! :) sending joinable room to closed lobby");
+                lobby.Temporary = false;
                 lobby.Joinable = false; // no longer in the pool of temp rooms
-                _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby);
+                _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby.ConvertToSanitizedLobby());
                 Add(lobby); // Firebase
             }
             else if (lobby.Created.AddSeconds(_appConfig.LobbyHangTimeout) < DateTime.UtcNow && lobby.Members.Count > 1)
             {
                 _logger.LogInformation("Lobby {0} is getting old, sending lobby to active lobby, has users {1}", lobby.LobbyName, lobby.Members.Count);
                 lobby.Joinable = false;
+                lobby.Temporary = false;
                 try
                 {
 
@@ -128,7 +130,8 @@ namespace smidigprosjekt.Logic.Services
                     Id = rndId,
                     Members = new HashSet<User>(),
                     Messages = new List<Message>(),
-                    MaxUsers = _appConfig.MaximumPerLobby
+                    MaxUsers = _appConfig.MaximumPerLobby,
+                    Temporary = true
                 };
                 Lobbies.Add(room);
                 return room;
@@ -143,7 +146,7 @@ namespace smidigprosjekt.Logic.Services
 
         public IEnumerable<Lobby> GetTemporaryRooms()
         {
-            return Lobbies.Where(e => e.Joinable);
+            return Lobbies.Where(e => e.Temporary);
         }
     }
 }
