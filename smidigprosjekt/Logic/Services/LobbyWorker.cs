@@ -97,19 +97,17 @@ namespace smidigprosjekt.Logic.Services
 
         public void ProcessTemporaryRooms()
         {
-
             // Output useful statistics during debugging to test if this is working as intended
             _logger.LogInformation(
-@"LobbyWorkerInfo:
-Temporary Lobbies:  {0}     Total users in active lobbies: {1}
-Total Lobbies:      {2}     Total users in temp lobbies:   {3}
-"
-, _lobbyService.All().Where(e => e.Joinable).Count()
-, _lobbyService.All().Where(e => !e.Joinable).Sum(e => e.Members.Count)
-, _lobbyService.All().Count()
-, _lobbyService.All().Where(e=>e.Joinable).Sum(e=>e.Members.Count)
-);
-
+            @"LobbyWorkerInfo:
+            Temporary Lobbies:  {0}     Total users in active lobbies: {1}
+            Total Lobbies:      {2}     Total users in temp lobbies:   {3}
+            "
+            , _lobbyService.All().Where(e => e.Joinable).Count()
+            , _lobbyService.All().Where(e => !e.Joinable).Sum(e => e.Members.Count)
+            , _lobbyService.All().Count()
+            , _lobbyService.All().Where(e=>e.Joinable).Sum(e=>e.Members.Count)
+            );
 
             foreach (var lob in _lobbyService.GetTemporaryRooms())
             {
@@ -128,17 +126,9 @@ Total Lobbies:      {2}     Total users in temp lobbies:   {3}
         public void ConnectUsersToLobby() // PulseLobby
         {
             //var hangoutUserCount = _userService.GetHangoutUserCount();
-
             //if (hangoutUserCount >= _appConfig.MinimumPerLobby)
             //{
                 var userSessionList = _userService.GetHangoutUsers();
-                // Can be internal value of Lobby.cs as [] or list or map<>
-                int Kristiania = 0; 
-                //int Skole2 = 0;
-                //int Skole3 = 0;
-                int Studie1 = 0;
-                //int Studie2 = 0;
-                //int Studie3 = 0;
 
                 //iterate trough every user that is 
                 //queued for hangout and is _not_ in a 
@@ -163,25 +153,20 @@ Total Lobbies:      {2}     Total users in temp lobbies:   {3}
 
                     if ((temp.Members.Count < temp.MaxUsers+1) || temp.Created.AddSeconds(60) < DateTime.UtcNow)
                     {
-                        
+                        /// DONE TODO: Remove this, will be handled in FindMatchingLobby() DONE
                         // Lobby's internal match scores, so that the group chat composistion will change.
                         // Match user to the lobbies composition as close as possible.
                         // Init if lobby was just created, and first member will tag it.
-                        if(userSession.user.Institutt == temp.Institutt)
-                        {
-                            Kristiania++; // adds to composition
-                        }
-                        if (userSession.user.Studie == temp.Studie)
-                        {
-                            Studie1++; // adds to composition
-                        }
-                        // will send the room to sorting, if full will joinable=false 
-                        //therefor not become a new temp room in GetTemporary()
+                        //if(userSession.user.Institutt == temp.Institutt)
+                        //{
+                        //    Kristiania++; // adds to composition
+                        //}
+                        //if (userSession.user.Studie == temp.Studie)
+                        //{
+                        //    Studie1++; // adds to composition
+                        //}
                     }
                 }
-            //}
-
-
         }
     }
 

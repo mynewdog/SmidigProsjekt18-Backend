@@ -20,8 +20,15 @@ namespace smidigprosjekt.Logic.Services
         int Count();
         //Get temporary room based on user criteria
         Lobby FindMatchingLobby(User user);
+        Lobby Newroom(User user);
         IEnumerable<Lobby> GetTemporaryRooms();
 
+    }
+    // Room map<id,priority> used in FindMatchingLobby(User)
+    public class MatchRoom
+    {
+        public Lobby Room { get; set; }
+        public int Prio { get; set; }
     }
     /// <summary>
     /// Keeps a list of lobbies in memory,
@@ -55,6 +62,91 @@ namespace smidigprosjekt.Logic.Services
             Task.Run(() => FirebaseDbConnection.removeRoom(lobby));
             Lobbies.Remove(lobby);
         }
+
+        public IEnumerable<Lobby> All()
+        {
+            return Lobbies;
+        }
+
+        public int Count()
+        {
+            return Lobbies.Count;
+        }
+
+        public IEnumerable<Lobby> GetTemporaryRooms()
+        {
+            return Lobbies.Where(e => e.Joinable);
+        }
+
+        public Lobby FindMatchingLobby(User user)
+        {
+            var matchList = Lobbies.Where(e => e.Joinable).Select(e => new MatchRoom() { Room = e, Prio = 0 });
+            foreach (var lob in matchList)
+            {
+                if (lob.Room.Institutt.Contains(user.Institutt, StringComparison.OrdinalIgnoreCase))
+                {
+                    lob.Prio += 10;
+                }
+                if (lob.Room.Studie.Contains(user.Studie, StringComparison.OrdinalIgnoreCase))
+                {
+                    lob.Prio += 3;
+                }
+            }
+            // Match on interests
+            foreach (var lobby in matchList) lobby.InterestMatch(user);
+            //InterestMatch(m, user);
+            var bestRoom = matchList.OrderByDescending(e => e.Prio);
+            
+            if (bestRoom.First().Prio == 0)
+            {
+                return Newroom(user);
+            }
+            else
+            {
+                return bestRoom.First().Room;
+            }
+        }
+
+        /// <summary>
+        /// Creates a new lobby based on the first users stats.
+        /// Returns this room and add it to Firebase.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public Lobby Newroom(User user)
+        {
+            _logger.LogInformation("Creating new room");
+            //Create a temporary room
+            var rnd = new Random();
+            var rndId = rnd.Next();
+            Lobby Newroom = new Lobby()
+            {
+                Studie = user.Studie,
+                Institutt = user.Institutt,
+                LobbyName = $"{user.Institutt.Trim()}-{user.Studie.Trim()}-{rndId}",
+                Created = DateTime.UtcNow,
+                Joinable = true,
+                Id = rndId,
+                Members = new HashSet<User>(),
+                Messages = new List<Message>(),
+                MaxUsers = _appConfig.MaximumPerLobby
+            };
+            Lobbies.Add(Newroom);
+            return Newroom;
+        }
+
+        /// <summary>
+        /// TODO: Will match compostion and move users
+        /// </summary>
+        /// <param name="lobby1"></param>
+        /// <param name="lobby2"></param>
+        public void Merge(Lobby lobby1, Lobby lobby2)
+        {
+            //lobb1 ++ lobby2
+            // -> users lobby2) -||-.users
+            // delete lobby1
+        }
+
         /// <summary>
         /// TODO:
         /// </summary>
@@ -74,7 +166,6 @@ namespace smidigprosjekt.Logic.Services
                 lobby.Joinable = false;
                 try
                 {
-
                     _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby.ConvertToSanitizedLobby());
                 }
                 catch (Exception e)
@@ -83,67 +174,6 @@ namespace smidigprosjekt.Logic.Services
                 }
                 Add(lobby);
             }
-        }
-
-        /// <summary>
-        /// TODO: Will match compostion and move users
-        /// </summary>
-        /// <param name="lobby1"></param>
-        /// <param name="lobby2"></param>
-        public void Merge(Lobby lobby1, Lobby lobby2)
-        {
-            //lobb1 ++ lobby2
-            // -> users lobby2) -||-.users
-            // delete lobby1
-        }
-
-        public IEnumerable<Lobby> All()
-        {
-            return Lobbies;
-        }
-
-        public int Count()
-        {
-            return Lobbies.Count;
-        }
-
-        public Lobby FindMatchingLobby(User user)
-        {
-            var rnd = new Random();
-            var rndId = rnd.Next();
-            var availableRooms = Lobbies.Where(e => e.Joinable).OrderByDescending(e => e.Members.Count);
-            // Creates a new room 
-            //fix matching algoritm
-            if (availableRooms?.Count() < 1)
-            {
-                _logger.LogInformation("Creating new room");
-                //Create a temporary room
-                Lobby room = new Lobby()
-                {
-                    Studie = user.Studie,
-                    Institutt = user.Institutt,
-                    LobbyName = $"{user.Institutt.Trim()}-{user.Studie.Trim()}-{rndId}",
-                    Created = DateTime.UtcNow,
-                    Joinable = true,
-                    Id = rndId,
-                    Members = new HashSet<User>(),
-                    Messages = new List<Message>(),
-                    MaxUsers = _appConfig.MaximumPerLobby
-                };
-                Lobbies.Add(room);
-                return room;
-            }
-            // Returns the most populated room
-            else
-            {
-                //Create algorithm to sort the first room to be returned
-                return availableRooms.First();
-            }
-        }
-
-        public IEnumerable<Lobby> GetTemporaryRooms()
-        {
-            return Lobbies.Where(e => e.Joinable);
         }
     }
 }
