@@ -15,11 +15,13 @@ namespace smidigprosjekt.Hubs
     [Authorize]
     public class TjommisHub : Hub
     {
+        private IInterestProviderService _interestProvider;
         private IUserService _userService;
         private ILobbyService _lobbyService;
 
-        public TjommisHub(IUserService userService, ILobbyService lobbyService)
+        public TjommisHub(IUserService userService, ILobbyService lobbyService, IInterestProviderService interestProvider)
         {
+            _interestProvider = interestProvider;
             _userService = userService;
             _lobbyService = lobbyService;
         }
@@ -67,9 +69,9 @@ namespace smidigprosjekt.Hubs
                     {
                         Username = user.Username,
                         Interests = user.Configuration.Interests,
-                        Lobbies = user.Lobbies
+                        Lobbies = user.Lobbies.Select(e=> e.ConvertToSanitizedLobby())
                     },
-                    InterestList = _userService.Interests,
+                    InterestList = _interestProvider.GetAll(),
                 };
                 
             }
@@ -120,24 +122,25 @@ namespace smidigprosjekt.Hubs
             
             user.Connected = true;
             user.ConnectionId = Context.ConnectionId;
-
-            await Clients.Caller.SendAsync("infoConnectEvent", new ConnectionEventInfo()
+            var connectionEvent = new ConnectionEventInfo()
             {
                 UserInfo = new UserConnectionInfo()
                 {
                     Username = user.Username,
-                    Interests = user.Configuration.Interests,
-                    Lobbies = user.Lobbies
+                    Interests = user.Configuration?.Interests,
+                    Lobbies = user.Lobbies.Select(e => e.ConvertToSanitizedLobby())
                 },
-                InterestList = _userService.Interests,
-            });
+                InterestList = _interestProvider.GetAll(),
+            };
+            await Clients.Caller.SendAsync("infoConnectEvent", connectionEvent);
+            
             _userService.ConnectUser(user, Clients.Caller);
 
-            await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
-            await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
+//            await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
+//            await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
+
 
         }
-
         /// <summary>
         /// Called when a connection with the hub is terminated.
         /// </summary>
@@ -161,7 +164,7 @@ namespace smidigprosjekt.Hubs
     public class UserConnectionInfo
     {
         public string Username { get; set; }
-        public HashSet<Lobby> Lobbies {get;set;}
+        public IEnumerable<TjommisLobby> Lobbies {get;set;}
         public List<string> Interests { get; internal set; }
     }
 }

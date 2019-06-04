@@ -27,7 +27,8 @@ class InterestPage extends React.Component {
     constructor(props) {
         super(props);
         this.vm = dotnetify.react.connect('ManageInterestVM', this);
-        this.state = { Interests: [], addName: '', Pages: []};
+        this.state = { Interests: [], addName: '', Pages: [] };
+        this.dispatch = state => this.vm.$dispatch(state); 
         /*
          * From
             public class InterestItem
@@ -51,23 +52,23 @@ class InterestPage extends React.Component {
             addButton: { margin: '1em' },
             removeIcon: { fill: grey500 },
             columns: {
-                id: { width: '10%' },
-                firstName: { width: '35%' },
-                lastName: { width: '35%' },
-                remove: { width: '15%' }
+                category: { width: '40%' },
+                tag: { width: '40%' },
+                remove: { width: '20%' }
             },
             pagination: { marginTop: '1em' }
         };
 
         const handleAdd = _ => {
             if (addName) {
-                this.dispatch({ Add: addName });
-                this.setState({ addName: '' });
+                console.log("adding");
+                this.dispatch({ Add: { Name: addName, Category: addCategory } });
+                this.setState({ addName: '', addCategory: '' });
             }
         };
 
         const handleUpdate = interest => {
-            let newState = Interests.map(item => (item.Id === interest.Id ? Object.assign(item, interest) : item));
+            let newState = Interests.map(item => (item.Key === interest.Key ? Object.assign(item, interest) : item));
             this.setState({ Interests: newState });
             this.dispatch({ Update: interest });
         };
@@ -82,7 +83,7 @@ class InterestPage extends React.Component {
 
         return (
             <MuiThemeProvider theme={ThemeDefault}>
-                <BasePage title="Table Page" navigation="Application / Table Page">
+                <BasePage title="Interests" navigation="Application / Table Page">
                     <div>
                         <div>
 
@@ -101,7 +102,7 @@ class InterestPage extends React.Component {
                                 onChange={event => this.setState({ addName: event.target.value })}
                             />
 
-                            <FloatingActionButton onClick={handleAdd} style={styles.addButton} >
+                            <FloatingActionButton onClick={handleAdd} style={styles.addButton} size="small" >
                                 <ContentAdd />
                             </FloatingActionButton>
                         </div>
@@ -109,25 +110,24 @@ class InterestPage extends React.Component {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableCell style={styles.columns.id}>ID</TableCell>
-                                    <TableCell style={styles.columns.firstName}>Category</TableCell>
-                                    <TableCell style={styles.columns.lastName}>Tag</TableCell>
+                                    <TableCell style={styles.columns.category}>Category</TableCell>
+                                    <TableCell style={styles.columns.tag}>Tag</TableCell>
                                     <TableCell style={styles.columns.remove}>Remove</TableCell>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {Interests.map(item => (
                                     <TableRow key={item.Id}>
-                                        <TableCell style={styles.columns.id}>{item.Id}</TableCell>
-                                        <TableCell style={styles.columns.firstName}>
-                                            <InlineEdit onChange={value => handleUpdate({ Id: item.Id, FirstName: value })}>{item.Category}</InlineEdit>
+                                        <TableCell style={styles.columns.category}>
+                                            <InlineEdit onChange={value => handleUpdate({ Id: item.Key, FirstName: value })}>{item.Category}</InlineEdit>
                                         </TableCell>
-                                        <TableCell style={styles.columns.lastName}>
-                                            <InlineEdit onChange={value => handleUpdate({ Id: item.Id, LastName: value })}>{item.Name}</InlineEdit>
+                                        <TableCell style={styles.columns.tag}>
+                                            <InlineEdit onChange={value => handleUpdate({ Id: item.Key, LastName: value })}>{item.Name}</InlineEdit>
                                         </TableCell>
                                         <TableCell style={styles.columns.remove}>
                                             <FloatingActionButton
-                                                onClick={_ => this.dispatch({ Remove: item.Id })}
+                                                size="small"
+                                                onClick={_ => this.dispatch({ Delete: item.Key })}
                                                 color="primary"
                                             >
                                                 <IconRemove />

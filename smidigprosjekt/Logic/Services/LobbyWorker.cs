@@ -129,6 +129,7 @@ namespace smidigprosjekt.Logic.Services
                     //Send lobbyinfo to the new user about the
                     //add curent user to the lobby
                     temp.Members.Add(userSession.user);
+                    if (temp.Members.Count >= temp.MaxUsers) temp.Joinable = false;
                     //current status of the temporary lobby
                     userSession.proxy.SendAsync("lobbyinfo", temp.ConvertToSanitizedLobby());
                     //Add user to SignalR group

@@ -13,6 +13,7 @@ namespace smidigprosjekt.Models
     {
         public DateTime Created { get; set; }
         public bool Joinable { get; set; } // to add/remove it-> pool of lobbies
+        public bool Temporary { get; set; }
         [JsonConverter(typeof(StringEnumConverter))]
         public LobbyStatus Status { get; set; }
         public int Id { get; set; }

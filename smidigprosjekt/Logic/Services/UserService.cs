@@ -19,9 +19,6 @@ namespace smidigprosjekt.Logic.Services
     /// </summary>
     public interface IUserService
     {
-        IList<InterestItem> Interests { get; }
-        Task<InterestItem> AddInterest(string Category, string Tag);
-        Task RemoveInterest(InterestItem item);
         /// <summary>
         /// Gets all users
         /// </summary>
@@ -91,14 +88,6 @@ namespace smidigprosjekt.Logic.Services
             logger.Log(LogLevel.Information,"User Service Started.");
             _activeUsers = new ConcurrentDictionary<User, IClientProxy>();
             UpdateUserAccessList();
-            UpdateInterestList();
-        }
-
-        private void UpdateInterestList()
-        {
-            logger.Log(LogLevel.Information, "Downloading Interest List...");
-            var _interestList = FirebaseDbConnection.GetInterests();
-            Interests = _interestList.Result;
         }
 
         public void UpdateUserAccessList()
@@ -186,7 +175,7 @@ namespace smidigprosjekt.Logic.Services
 
         public User GetUserConfiguration(string userName)
         {
-            return _userAccessList.Where(e => e.Username.Contains(userName,StringComparison.InvariantCultureIgnoreCase)).FirstOrDefault();
+            return _userAccessList.Where(e => e.Username.Contains(userName,StringComparison.CurrentCultureIgnoreCase)).FirstOrDefault();
         }
 
         public async Task<bool> UpdateUser(User user)
@@ -204,7 +193,7 @@ namespace smidigprosjekt.Logic.Services
 
         public async Task<InterestItem> AddInterest(string Category, string Tag)
         {
-            return await FirebaseDbConnection.AddInterest(new InterestItem() {Id = Interests.Count(), Category = Category, Name = Tag });
+            return await FirebaseDbConnection.AddInterest(new InterestItem() { Category = Category, Name = Tag });
         }
 
         public async Task RemoveInterest(InterestItem item)

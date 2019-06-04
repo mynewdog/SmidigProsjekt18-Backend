@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.SpaServices.Webpack;
 using DotNetify.Security;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using System.Text.RegularExpressions;
 
 namespace smidigprosjekt
 {
@@ -52,10 +53,10 @@ namespace smidigprosjekt
             })
             .AddJwtBearer(config =>
             {
-          //Add token valdiation parameters(use AuthServer.client_id) for verification
-          config.TokenValidationParameters = new TokenValidationParameters
+                //Add token valdiation parameters(use AuthServer.client_id) for verification
+                config.TokenValidationParameters = new TokenValidationParameters
                 {
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthServer.Client_id)),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(AuthServer.SecretKey)),
                     ValidateIssuerSigningKey = true,
                     ValidateAudience = false,
                     ValidateIssuer = false,
@@ -71,20 +72,20 @@ namespace smidigprosjekt
           config.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
-              {
-                    var accessToken = context.Request.Query["access_token"];
-              // If the request is for our hub...
-              var path = context.HttpContext.Request.Path;
-                    if (!string.IsNullOrEmpty(accessToken) &&
-                  (path.StartsWithSegments("/tjommisHub")))
-                    {
-                  // Read the token out of the query string
-                  context.Token = accessToken;
+                  {
+                        var accessToken = context.Request.Query["access_token"];
+                  // If the request is for our hub...
+                  var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                      (path.StartsWithSegments("/tjommisHub")))
+                        {
+                      // Read the token out of the query string
+                      context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
                     }
-                    return Task.CompletedTask;
-                }
-                };
-            });
+                    };
+                });
 
             //Add cross origin policy so Ionic can connect
             services.AddCors(options => options.AddPolicy("AllowAll", p => p.AllowAnyOrigin()
@@ -181,9 +182,8 @@ namespace smidigprosjekt
                 var uri = context.Request.Path.ToUriComponent();
                 if (uri.EndsWith(".map"))
                     return;
-                else if (uri.EndsWith("_hmr"))  // Fix HMR for deep links.
-                    context.Response.Redirect("/dist/__webpack_hmr");
-
+                else if (uri.EndsWith("_hmr") || uri.Contains("hot-update"))  // Fix HMR for deep links.
+                    context.Response.Redirect(Regex.Replace(uri, ".+/dist", "/dist"));
                 if (!uri.Contains('.'))
                 {
                     using (var reader = new StreamReader(File.OpenRead("wwwroot/index.html")))
