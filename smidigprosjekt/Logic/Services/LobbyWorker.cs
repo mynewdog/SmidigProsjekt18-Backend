@@ -117,22 +117,10 @@ namespace smidigprosjekt.Logic.Services
         /// <summary>
         /// NOT ACCURATE
         /// will pulse every 10 sek and swoop up all the users who have activated hangout.
-        /// Add these users to a tempRoom(from LobbyService)
-        /// Match/Merge func calls on tempRoom
-        /// send tempLobby to client/Firebase via Add(from LobbyService
-        /// The task that is executed frequently
-        /// Will create lobbies and notify clients
         /// </summary>
-        public void ConnectUsersToLobby() // PulseLobby
+        public void ConnectUsersToLobby()
         {
-            //var hangoutUserCount = _userService.GetHangoutUserCount();
-            //if (hangoutUserCount >= _appConfig.MinimumPerLobby)
-            //{
                 var userSessionList = _userService.GetHangoutUsers();
-
-                //iterate trough every user that is 
-                //queued for hangout and is _not_ in a 
-                //room or _temporary_ room
                 foreach (var userSession in userSessionList)
                 {
                     var temp = _lobbyService.FindMatchingLobby(userSession.user);
@@ -148,24 +136,8 @@ namespace smidigprosjekt.Logic.Services
 
                     //User is now in lobby, switch hangoutsearch to false
                     userSession.user.HangoutSearch = false;
-
+                    userSession.user.SingleHangoutSearch = false;
                     userSession.user.Lobbies.Add(temp);
-
-                    if ((temp.Members.Count < temp.MaxUsers+1) || temp.Created.AddSeconds(60) < DateTime.UtcNow)
-                    {
-                        /// DONE TODO: Remove this, will be handled in FindMatchingLobby() DONE
-                        // Lobby's internal match scores, so that the group chat composistion will change.
-                        // Match user to the lobbies composition as close as possible.
-                        // Init if lobby was just created, and first member will tag it.
-                        //if(userSession.user.Institutt == temp.Institutt)
-                        //{
-                        //    Kristiania++; // adds to composition
-                        //}
-                        //if (userSession.user.Studie == temp.Studie)
-                        //{
-                        //    Studie1++; // adds to composition
-                        //}
-                    }
                 }
         }
     }

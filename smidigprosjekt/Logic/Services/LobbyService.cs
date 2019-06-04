@@ -24,7 +24,7 @@ namespace smidigprosjekt.Logic.Services
         IEnumerable<Lobby> GetTemporaryRooms();
 
     }
-    // Room map<id,priority> used in FindMatchingLobby(User)
+    // Lobby map<id,priority> used in FindMatchingLobby(User user)
     public class MatchRoom
     {
         public Lobby Room { get; set; }
@@ -80,7 +80,15 @@ namespace smidigprosjekt.Logic.Services
 
         public Lobby FindMatchingLobby(User user)
         {
-            var matchList = Lobbies.Where(e => e.Joinable).Select(e => new MatchRoom() { Room = e, Prio = 0 });
+            IEnumerable<MatchRoom> matchList;
+            if (user.HangoutSearch)
+            {
+                matchList = Lobbies.Where(e => e.Joinable).Select(e => new MatchRoom() { Room = e, Prio = 0 });
+            }
+            else
+            {
+                matchList = Lobbies.Where(e => e.Joinable && e.MaxUsers == 2).Select(e => new MatchRoom() { Room = e, Prio = 0 });
+            }
             foreach (var lob in matchList)
             {
                 if (lob.Room.Institutt.Contains(user.Institutt, StringComparison.OrdinalIgnoreCase))
@@ -91,12 +99,13 @@ namespace smidigprosjekt.Logic.Services
                 {
                     lob.Prio += 3;
                 }
+                //Match on interests list
+                lob.InterestMatch(user);
             }
             // Match on interests
-            foreach (var lobby in matchList) lobby.InterestMatch(user);
-            //InterestMatch(m, user);
+            //foreach (var lobby in matchList) lobby.InterestMatch(user);
             var bestRoom = matchList.OrderByDescending(e => e.Prio);
-            
+            // Did not match on any room, creates new room based on the user
             if (bestRoom.First().Prio == 0)
             {
                 return Newroom(user);
@@ -116,7 +125,6 @@ namespace smidigprosjekt.Logic.Services
         public Lobby Newroom(User user)
         {
             _logger.LogInformation("Creating new room");
-            //Create a temporary room
             var rnd = new Random();
             var rndId = rnd.Next();
             Lobby Newroom = new Lobby()
@@ -129,14 +137,14 @@ namespace smidigprosjekt.Logic.Services
                 Id = rndId,
                 Members = new HashSet<User>(),
                 Messages = new List<Message>(),
-                MaxUsers = _appConfig.MaximumPerLobby
+                MaxUsers = user.SingleHangoutSearch ? _appConfig.MaximumPerLobby : 2
             };
             Lobbies.Add(Newroom);
             return Newroom;
         }
 
         /// <summary>
-        /// TODO: Will match compostion and move users
+        /// Not used yet, nice to have
         /// </summary>
         /// <param name="lobby1"></param>
         /// <param name="lobby2"></param>
@@ -151,7 +159,7 @@ namespace smidigprosjekt.Logic.Services
         /// TODO:
         /// </summary>
         /// <param name="lobby"></param>
-        public void SendRoom(Lobby lobby)// add parameter of composistion tags
+        public void SendRoom(Lobby lobby)
         {
             if (lobby.MaxUsers == lobby.Members.Count) // Room reach max size
             {
@@ -163,7 +171,7 @@ namespace smidigprosjekt.Logic.Services
             else if (lobby.Created.AddSeconds(_appConfig.LobbyHangTimeout) < DateTime.UtcNow && lobby.Members.Count > 1)
             {
                 _logger.LogInformation("Lobby {0} is getting old, sending lobby to active lobby, has users {1}", lobby.LobbyName, lobby.Members.Count);
-                lobby.Joinable = false;
+                lobby.Joinable = false; // no longer in the pool of temp rooms
                 try
                 {
                     _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby.ConvertToSanitizedLobby());

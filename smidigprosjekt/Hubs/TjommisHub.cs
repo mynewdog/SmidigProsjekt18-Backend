@@ -78,8 +78,18 @@ namespace smidigprosjekt.Hubs
         public async Task Hangout()
         {
             var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
-            if (user != null) { 
+            if (user != null)
+            {
                 user.HangoutSearch = true;
+                await Clients.Caller.SendAsync("hangoutEvent", _userService.GetHangoutUserCount());
+            }
+        }
+        public async Task HangoutSingle()
+        {
+            var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
+            if (user != null)
+            {
+                user.SingleHangoutSearch = true;
                 await Clients.Caller.SendAsync("hangoutEvent", _userService.GetHangoutUserCount());
             }
         }
