@@ -170,7 +170,7 @@ namespace smidigprosjekt.Logic.Services
 
         public IEnumerable<UserSession> GetHangoutUsers()
         {
-            return _activeUsers.Where(e => e.Key.HangoutSearch).Select(e => new UserSession() { proxy = e.Value, user = e.Key });
+            return _activeUsers.Where(e => e.Key.HangoutSearch || e.Key.SingleHangoutSearch).Select(e => new UserSession() { proxy = e.Value, user = e.Key });
         }
 
         public User GetUserConfiguration(string userName)

@@ -92,7 +92,7 @@ namespace smidigprosjekt.Hubs
             if (user != null)
             {
                 user.SingleHangoutSearch = true;
-                await Clients.Caller.SendAsync("hangoutEvent", _userService.GetHangoutUserCount());
+                await Clients.Caller.SendAsync("hangoutEventSingle", _userService.GetHangoutUserCount());
             }
         }
         public bool TestHangout()

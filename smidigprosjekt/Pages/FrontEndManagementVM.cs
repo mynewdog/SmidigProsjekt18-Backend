@@ -24,7 +24,7 @@ namespace smidigprosjekt.Hubs
         public int JoinableLobbies => _lobbyService.All().Where(e=>e.Joinable == true).Count();
         public IEnumerable<TjommisLobby> TempLobbies => _lobbyService.GetTemporaryRooms().Select(e => e.ConvertToSanitizedLobby());
         public IEnumerable<TjommisLobby> Lobbies => _lobbyService.All().Select(e=>e.ConvertToSanitizedLobby());
-        public IEnumerable<TjommisUser> Users => _userService.All().Where(e=>!e.HangoutSearch).Select(e=>e.ConvertToSanitizedUser());
+        public IEnumerable<TjommisUser> Users => _userService.All().Where(e=>!e.HangoutSearch || !e.SingleHangoutSearch).Select(e=>e.ConvertToSanitizedUser());
         public IEnumerable<TjommisUser> UsersInHangout => _userService.GetHangoutUsers().Select(e=>e.user.ConvertToSanitizedUser());
 
 

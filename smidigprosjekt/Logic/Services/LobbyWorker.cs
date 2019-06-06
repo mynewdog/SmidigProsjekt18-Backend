@@ -108,11 +108,16 @@ namespace smidigprosjekt.Logic.Services
             , _lobbyService.All().Count()
             , _lobbyService.All().Where(e=>e.Joinable).Sum(e=>e.Members.Count)
             );
-
+            var tempRooms = _lobbyService.GetTemporaryRooms();
+            var oldTempRooms = tempRooms.Where(e => e.Created.AddSeconds(_appConfig.LobbyHangTimeout) < DateTime.UtcNow && e.MaxUsers > e.Members.Count());
+            if (oldTempRooms.Count() >= 2)
+            {
+               _lobbyService.Merge(oldTempRooms.First(), oldTempRooms.Last());
+            };
             foreach (var lob in _lobbyService.GetTemporaryRooms())
             {
                 _lobbyService.SendRoom(lob); // TODO: send composition match score for merging
-            }
+            };
         }
         /// <summary>
         /// NOT ACCURATE

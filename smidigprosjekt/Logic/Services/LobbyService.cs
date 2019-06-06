@@ -22,7 +22,7 @@ namespace smidigprosjekt.Logic.Services
         Lobby FindMatchingLobby(User user);
         Lobby Newroom(User user);
         IEnumerable<Lobby> GetTemporaryRooms();
-
+        void Merge(Lobby lobby1, Lobby lobby2);
     }
     // Lobby map<id,priority> used in FindMatchingLobby(User user)
     public class MatchRoom
@@ -75,29 +75,31 @@ namespace smidigprosjekt.Logic.Services
 
         public IEnumerable<Lobby> GetTemporaryRooms()
         {
-            return Lobbies.Where(e => e.Joinable);
+            return Lobbies.Where(e => e.Joinable || e.Temporary);
         }
 
         public Lobby FindMatchingLobby(User user)
         {
-            IEnumerable<MatchRoom> matchList;
+            List<MatchRoom> matchList;
+            // For group chat rooms.
             if (user.HangoutSearch)
             {
-                matchList = Lobbies.Where(e => e.Joinable).Select(e => new MatchRoom() { Room = e, Prio = 0 });
+                matchList = Lobbies.Where(e => e.Joinable).Select(e => new MatchRoom() { Room = e, Prio = 0 }).ToList();
             }
+            // For single 1 to 1 rooms.
             else
             {
-                matchList = Lobbies.Where(e => e.Joinable && e.MaxUsers == 2).Select(e => new MatchRoom() { Room = e, Prio = 0 });
+                matchList = Lobbies.Where(e => e.Joinable && e.MaxUsers == 2).Select(e => new MatchRoom() { Room = e, Prio = 0 }).ToList();
             }
             foreach (var lob in matchList)
             {
                 if (lob.Room.Institutt.Contains(user.Institutt, StringComparison.OrdinalIgnoreCase))
                 {
-                    lob.Prio += 10;
+                    lob.Prio += 10; // Need to test scale
                 }
                 if (lob.Room.Studie.Contains(user.Studie, StringComparison.OrdinalIgnoreCase))
                 {
-                    lob.Prio += 3;
+                    lob.Prio += 3; // Need to test scale
                 }
                 //Match on interests list
                 lob.InterestMatch(user);
@@ -106,7 +108,7 @@ namespace smidigprosjekt.Logic.Services
             //foreach (var lobby in matchList) lobby.InterestMatch(user);
             var bestRoom = matchList.OrderByDescending(e => e.Prio);
             // Did not match on any room, creates new room based on the user
-            if (bestRoom.First().Prio == 0)
+            if (bestRoom.FirstOrDefault() == null || (bestRoom.FirstOrDefault() != null && bestRoom.First().Prio < 13))
             {
                 return Newroom(user);
             }
@@ -125,24 +127,35 @@ namespace smidigprosjekt.Logic.Services
         public Lobby Newroom(User user)
         {
             _logger.LogInformation("Creating new room");
+       
+            Lobby Newroom = NewRoom(user.Studie, 
+                user.Institutt, $"{user.Institutt.Trim()}-{user.Studie.Trim()}",
+                user.SingleHangoutSearch ? _appConfig.MaximumPerLobby : 2
+                ); 
+               
+            Lobbies.Add(Newroom);
+            return Newroom;
+        }
+        private Lobby NewRoom(string studie, string institutt, string lobbyname, int maxUsers)
+        {
             var rnd = new Random();
             var rndId = rnd.Next();
-            Lobby Newroom = new Lobby()
+
+            return new Lobby()
             {
-                Studie = user.Studie,
-                Institutt = user.Institutt,
-                LobbyName = $"{user.Institutt.Trim()}-{user.Studie.Trim()}-{rndId}",
+                Studie = studie,
+                Institutt = institutt,
+                LobbyName = $"{lobbyname}-{rndId}",
                 Created = DateTime.UtcNow,
                 Joinable = true,
                 Id = rndId,
                 Members = new HashSet<User>(),
                 Messages = new List<Message>(),
-                MaxUsers = user.SingleHangoutSearch ? _appConfig.MaximumPerLobby : 2
+                MaxUsers = maxUsers,
+                Status = LobbyStatus.Temporary,
+                Temporary = true
             };
-            Lobbies.Add(Newroom);
-            return Newroom;
         }
-
         /// <summary>
         /// Not used yet, nice to have
         /// </summary>
@@ -150,9 +163,34 @@ namespace smidigprosjekt.Logic.Services
         /// <param name="lobby2"></param>
         public void Merge(Lobby lobby1, Lobby lobby2)
         {
-            //lobb1 ++ lobby2
-            // -> users lobby2) -||-.users
-            // delete lobby1
+            HashSet<User> members = new HashSet<User>();
+            foreach (var member in lobby1.Members) members.Add(member);
+            foreach (var member in lobby2.Members) members.Add(member);
+            Lobbies.Remove(lobby1);
+            Lobbies.Remove(lobby2);
+            var prioStudie= members.GroupBy(e => e.Studie).OrderByDescending(e=>e.Count());
+            var prioInstitutt = members.GroupBy(e => e.Institutt).OrderByDescending(e => e.Count());
+
+            string studie = prioStudie.First().Key;
+            string institutt = prioStudie.First().Key;
+            string lobbyname = $"{institutt.Trim()}-{studie.Trim()}";
+            int maxusers = members.Count() > _appConfig.MaximumPerLobby ? members.Count() : _appConfig.MaximumPerLobby;
+            var lobby = NewRoom(studie,institutt,lobbyname,maxusers);
+            if (lobby.Members.Count >= _appConfig.MaximumPerLobby) lobby.Joinable = false;
+
+            lobby.Members = members;
+            // Update user information
+            foreach (var member in members)
+            {
+                member.Lobbies.Add(lobby);
+                _hub.Groups.AddToGroupAsync(member.ConnectionId, lobby.LobbyName);
+            }
+            
+
+
+            _hub.Clients.Group(lobby.LobbyName).SendAsync("lobbyinfo", lobby.ConvertToSanitizedLobby());
+
+            Lobbies.Add(lobby);
         }
 
         /// <summary>
@@ -165,13 +203,23 @@ namespace smidigprosjekt.Logic.Services
             {
                 _logger.LogInformation("Lobby full! :) sending joinable room to closed lobby");
                 lobby.Joinable = false; // no longer in the pool of temp rooms
-                _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby);
+                lobby.Temporary = false;
+                try
+                {
+                    _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby.ConvertToSanitizedLobby());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
                 Add(lobby); // Firebase
             }
+            //If room to old
             else if (lobby.Created.AddSeconds(_appConfig.LobbyHangTimeout) < DateTime.UtcNow && lobby.Members.Count > 1)
             {
                 _logger.LogInformation("Lobby {0} is getting old, sending lobby to active lobby, has users {1}", lobby.LobbyName, lobby.Members.Count);
                 lobby.Joinable = false; // no longer in the pool of temp rooms
+                lobby.Temporary = false;
                 try
                 {
                     _hub.Clients.Group(lobby.LobbyName).SendAsync("joinroom", lobby.ConvertToSanitizedLobby());

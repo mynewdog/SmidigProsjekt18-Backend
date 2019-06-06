@@ -12,7 +12,7 @@ namespace smidigprosjekt.Logic.Services
     {
         IList<InterestItem> GetAll();
         Task<InterestItem> Add(string Category, string Tag);
-        new Task Remove(InterestItem item);
+        Task Remove(InterestItem item);
     }
     public class InterestProviderService : List<InterestItem>, IInterestProviderService
     {
