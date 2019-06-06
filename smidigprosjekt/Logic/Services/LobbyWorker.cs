@@ -43,7 +43,6 @@ namespace smidigprosjekt.Logic.Services
             _logger = loggerFactory.CreateLogger<LobbyWorker>();
         }
 
-
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Console.WriteLine($"LobbyWorker task started doing background work.");
@@ -80,7 +79,6 @@ namespace smidigprosjekt.Logic.Services
                 });
             };
             //_userService.GetConnectedConnections().ToList().ForEach(e => e.SendAsync("infoGlobalEvent", _userService.Count()));
-
         }
 
         private void TruncateRoomList()
@@ -112,15 +110,14 @@ namespace smidigprosjekt.Logic.Services
             var oldTempRooms = tempRooms.Where(e => e.Created.AddSeconds(_appConfig.LobbyHangTimeout) < DateTime.UtcNow && e.MaxUsers > e.Members.Count());
             if (oldTempRooms.Count() >= 2)
             {
-               _lobbyService.Merge(oldTempRooms.First(), oldTempRooms.Last());
+               _lobbyService.Merge(oldTempRooms.First(), oldTempRooms.Last()); // merge old and not full rooms
             };
             foreach (var lob in _lobbyService.GetTemporaryRooms())
             {
-                _lobbyService.SendRoom(lob); // TODO: send composition match score for merging
+                _lobbyService.SendRoom(lob); // sends rooms to client
             };
         }
         /// <summary>
-        /// NOT ACCURATE
         /// will pulse every 10 sek and swoop up all the users who have activated hangout.
         /// </summary>
         public void ConnectUsersToLobby()

@@ -104,11 +104,9 @@ namespace smidigprosjekt.Logic.Services
                 //Match on interests list
                 lob.InterestMatch(user);
             }
-            // Match on interests
-            //foreach (var lobby in matchList) lobby.InterestMatch(user);
             var bestRoom = matchList.OrderByDescending(e => e.Prio);
             // Did not match on any room, creates new room based on the user
-            if (bestRoom.FirstOrDefault() == null || (bestRoom.FirstOrDefault() != null && bestRoom.First().Prio < 13))
+            if (bestRoom.FirstOrDefault() == null || (bestRoom.FirstOrDefault() != null && bestRoom.First().Prio == 0))
             {
                 return Newroom(user);
             }
@@ -157,7 +155,9 @@ namespace smidigprosjekt.Logic.Services
             };
         }
         /// <summary>
-        /// Not used yet, nice to have
+        /// Merge with creating a hashset with uniqe members from both lobbies
+        /// populate a new lobby based on the old ones.
+        /// adds members to it and send it to client
         /// </summary>
         /// <param name="lobby1"></param>
         /// <param name="lobby2"></param>
