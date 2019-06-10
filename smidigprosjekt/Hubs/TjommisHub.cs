@@ -54,6 +54,25 @@ namespace smidigprosjekt.Hubs
             //save messages for reloading
             room.Messages.Add(msg);
         }
+        public async Task EnterLobby(TjommisUser user,TjommisLobby Lobby)
+        {
+            var userValidation = _userService.GetUserFromConnectionId(Context.ConnectionId);
+            //Check if valid userrequest and that user is still conntected
+            if (user.Username.Contains(userValidation.Username)) 
+            {
+                //check if user is actually in this room
+                var lobbyValidation = userValidation.Lobbies.SingleOrDefault(e => e.LobbyName == Lobby.LobbyName);
+                if (lobbyValidation != null)
+                {
+                    await Groups.AddToGroupAsync(userValidation.ConnectionId, Lobby.LobbyName);
+                    await Clients.Caller.SendAsync("enterroom", lobbyValidation.ConvertToSanitizedLobby());
+                }
+            }
+            else
+            {
+                Console.WriteLine("Could not validate user");
+            }
+        }
         public async Task<ConnectionEventInfo> UpdateInterests(List<string> Interests)
         {
             var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
