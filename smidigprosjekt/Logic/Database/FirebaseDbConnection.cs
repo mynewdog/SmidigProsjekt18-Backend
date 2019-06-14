@@ -11,7 +11,7 @@ namespace smidigprosjekt.Logic.Database
     public class FirebaseDbConnection
     {
         public static string databaseURL = "https://tjommis-a936a.firebaseio.com";
-        public static string clientSecret = "<replace with client secret>";
+        public static string clientSecret = "VjSjNhSKRWqs7wCCWUZ3UG9KFOPwkuFssQ1uxxOT";
         public static FirebaseClient GetClient()
         {
             var firebaseClient = new FirebaseClient(databaseURL, new FirebaseOptions() { AuthTokenAsyncFactory = () => Task.FromResult(clientSecret) });
