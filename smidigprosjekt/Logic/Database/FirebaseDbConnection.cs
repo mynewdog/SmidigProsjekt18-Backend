@@ -10,14 +10,8 @@ namespace smidigprosjekt.Logic.Database
 {
     public class FirebaseDbConnection
     {
-        public static string apiKey = "AIzaSyDBfx0QnJlGiCC73eBBrwmqerQbclz0VjM";
-        public static string authDomain = "tjommis-a936a.firebaseapp.com";
         public static string databaseURL = "https://tjommis-a936a.firebaseio.com";
-        public static string projectId = "tjommis-a936a";
-        public static string storageBucket = "tjommis-a936a.appspot.com";
-        public static string messagingSenderId = "830097904055";
-        public static string appId = "1:830097904055:web:27cbc5a3d1898963";
-        public static string clientSecret = "VjSjNhSKRWqs7wCCWUZ3UG9KFOPwkuFssQ1uxxOT";
+        public static string clientSecret = "<replace with client secret>";
         public static FirebaseClient GetClient()
         {
             var firebaseClient = new FirebaseClient(databaseURL, new FirebaseOptions() { AuthTokenAsyncFactory = () => Task.FromResult(clientSecret) });
@@ -26,34 +20,7 @@ namespace smidigprosjekt.Logic.Database
         
         public static void initializeDB()
         {
-            /*
-            var client = GetClient();
-            var i = new List<InterestItem>()
-            {
-                new InterestItem() {Id = 0,
-                    Category = "Skole",
-                    Name = "Eksamen"
-                },
-                new InterestItem() {Id = 1,
-                    Category = "Sport",
-                    Name = "Fotball"},
-                new InterestItem() {Id = 2,
-                    Category = "Kultur",
-                    Name = "Kino"},
-                new InterestItem() {Id = 3,
-                    Category = "Jobb",
-                    Name = "Jobbsøknad"},
-                new InterestItem() {Id = 4,
-                    Category = "Mat og Drikke",
-                    Name = "Burger"},
-                new InterestItem() {Id = 5,
-                    Category = "Mat og Drikke",
-                    Name = "Øl"
-                }
-            };
-            i.ForEach(async e => {
-                await client.Child("Interests").PostAsync(e);
-             });*/
+            //used for first time developer init
         }
         public static async Task<InterestItem> AddInterest(InterestItem e)
         {

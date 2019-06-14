@@ -13,7 +13,6 @@
   <ItemGroup>
     <Content Include="src\views\InterestPage.js" />
     <Content Include="src\views\StartPage.js" />
-    <Content Include="src\views\App.js" />
     <Content Include="webpack.config.js" />
   </ItemGroup>
 

@@ -128,7 +128,7 @@ namespace smidigprosjekt.Logic.Services
        
             Lobby Newroom = NewRoom(user.Studie, 
                 user.Institutt, $"{user.Institutt.Trim()}-{user.Studie.Trim()}",
-                user.SingleHangoutSearch ? _appConfig.MaximumPerLobby : 2
+                user.HangoutSearch ? _appConfig.MaximumPerLobby : 2
                 ); 
                
             Lobbies.Add(Newroom);
@@ -194,7 +194,7 @@ namespace smidigprosjekt.Logic.Services
         }
 
         /// <summary>
-        /// TODO:
+        /// Triggers a sendroom command if the lobby meets requirements
         /// </summary>
         /// <param name="lobby"></param>
         public void SendRoom(Lobby lobby)

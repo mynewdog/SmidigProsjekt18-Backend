@@ -83,7 +83,8 @@ namespace smidigprosjekt.Logic.Services
 
         private void TruncateRoomList()
         {
-            foreach (var room in _lobbyService.All().Where(e => e.Joinable == false))
+            //Clean old rooms
+            foreach (var room in _lobbyService.All())
             {
                 if (room.Created.AddHours(1) < DateTime.UtcNow) {
                     _logger.LogInformation("Deleting room: ", room.LobbyName);

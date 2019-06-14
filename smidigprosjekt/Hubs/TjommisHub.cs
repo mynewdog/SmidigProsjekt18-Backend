@@ -96,30 +96,26 @@ namespace smidigprosjekt.Hubs
             }
             return null;
         }
-        public async Task Hangout()
+        public bool HangoutGroup()
         {
             var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
             if (user != null)
             {
                 user.HangoutSearch = true;
-                await Clients.Caller.SendAsync("hangoutEvent", _userService.GetHangoutUserCount());
+                user.SingleHangoutSearch = false;
+                //await Clients.Caller.SendAsync("hangoutevent", _userService.GetHangoutUserCount());
+                return true;
             }
+            return false;
         }
-        public async Task HangoutSingle()
+        public bool HangoutSingle()
         {
             var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
             if (user != null)
             {
                 user.SingleHangoutSearch = true;
-                await Clients.Caller.SendAsync("hangoutEventSingle", _userService.GetHangoutUserCount());
-            }
-        }
-        public bool TestHangout()
-        {
-            var user = _userService.GetUserFromConnectionId(Context.ConnectionId);
-            if (user != null)
-            {
-                user.HangoutSearch = true;
+                user.HangoutSearch = false;
+                //await Clients.Caller.SendAsync("hangoutevent", _userService.GetHangoutUserCount());
                 return true;
             }
             return false;
@@ -141,6 +137,13 @@ namespace smidigprosjekt.Hubs
             
             user.Connected = true;
             user.ConnectionId = Context.ConnectionId;
+
+            // Clean up user lobbies before we send the list, we can only send to lobbies that exists in lobbyservice.
+            // Could exist older / stale lobbies in User object from earlier
+            // This is because of lobbyworker at current state removes old rooms
+            // In the future, this will not be an issue, and this function will deprechate
+            user.Lobbies.RemoveWhere(e => !_lobbyService.All().Contains(e));
+
             var connectionEvent = new ConnectionEventInfo()
             {
                 UserInfo = new UserConnectionInfo()
@@ -154,11 +157,7 @@ namespace smidigprosjekt.Hubs
             await Clients.Caller.SendAsync("infoConnectEvent", connectionEvent);
             
             _userService.ConnectUser(user, Clients.Caller);
-
-//            await Clients.Caller.SendAsync("infoGlobalEvent", _userService.Count());
-//            await Clients.All.SendAsync("messageBroadcastEvent", "system", userName + " connected. (" + _userService.Count() + ")");
-
-
+           
         }
         /// <summary>
         /// Called when a connection with the hub is terminated.
